@@ -1,0 +1,7 @@
+{
+  "id": "demo.ui",
+  "displayName": { "en": "Demo module (no real TRA/bank yet)", "sw": "Moduli ya onyesho (bado hakuna TRA/benki)" },
+  "sensitivity": "low",
+  "commonTasks": ["Find the action button", "Submit the form", "Finish the task"],
+  "pitfalls": ["Do not enter real bank or TRA credentials into Dira chat"]
+}

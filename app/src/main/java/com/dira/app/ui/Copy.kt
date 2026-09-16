@@ -1,6 +1,6 @@
 package com.dira.app.ui
 
-/** SW/EN copy for Phase 1 — mirrors values / values-sw without forcing locale restart. */
+/** SW/EN copy — consent, watching, stop, session cleared. */
 data class DiraCopy(
     val consentTitle: String,
     val consentBody: String,
@@ -11,17 +11,23 @@ data class DiraCopy(
     val watching: String,
     val stop: String,
     val sessionCleared: String,
+    val sessionTimedOut: String,
     val askHint: String,
     val fakeStep: String,
     val demoModule: String,
+    val guideStep: String,
+    val guideSource: String,
+    val sessionTimer: String,
+    val projectionHint: String,
 )
 
 fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     consentTitle = "Kabla Dira iweze kukusaidia",
     consentBody = "Dira ni msaidizi wa muda, siyo kinasa skrini.\n\n" +
-        "Ukibonyeza Saidia, tunaweza kuona skrini yako tu ili kuonyesha hatua inayofuata. " +
-        "Hatuhifadhi skrini za benki wala serikali. Unaweza Kubonyeza Simamisha wakati wowote — " +
-        "kisha kikao kinafutwa.",
+        "Ukibonyeza Saidia, tunaomba ruhusa ya kuona skrini yako tu ili kuonyesha hatua inayofuata. " +
+        "Fremu zinakaa kwenye kumbukumbu tu — hatuhifadhi skrini za benki wala serikali. " +
+        "Unaweza Kubonyeza Simamisha wakati wowote — kisha kikao kinafutwa. " +
+        "Kikao pia kitaisha baada ya dakika 5.",
     consentAccept = "Nimeelewa — endelea",
     homeTitle = "Dira",
     homeTagline = "Dira yako unapokwama kwenye programu",
@@ -29,14 +35,21 @@ fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     watching = "Inatazama…",
     stop = "Acha kutazama",
     sessionCleared = "Kikao kimefutwa.",
+    sessionTimedOut = "Muda wa kikao umeisha (dakika 5).",
     askHint = "Uliza unachotaka kufanya…",
     fakeStep = "Ifuatayo: bonyeza kidhibiti kilichoangaziwa",
     demoModule = "Moduli ya onyesho (bado hakuna TRA/benki)",
+    guideStep = "Pata hatua",
+    guideSource = "Chanzo",
+    sessionTimer = "Iliyobaki: %d:%02d",
+    projectionHint = "Utapata dirisha la mfumo la kushiriki skrini. Hakuna Accessibility, anwani, SMS, wala hifadhi.",
 ) else DiraCopy(
     consentTitle = "Before Dira can help",
     consentBody = "Dira is a temporary helper, not a recorder.\n\n" +
-        "When you tap Help, we may look at your screen only to show the next step. " +
-        "We do not keep bank or government screens. You can Stop anytime — then the session is cleared.",
+        "When you tap Help, we ask for screen capture permission only to show the next step. " +
+        "Frames stay in memory — we do not keep bank or government screens. " +
+        "You can Stop anytime — then the session is cleared. " +
+        "Sessions also end after 5 minutes.",
     consentAccept = "I understand — continue",
     homeTitle = "Dira",
     homeTagline = "Your compass when software gets stuck",
@@ -44,7 +57,12 @@ fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     watching = "Watching…",
     stop = "Stop watching",
     sessionCleared = "Session cleared.",
+    sessionTimedOut = "Session timed out (5 minutes).",
     askHint = "Ask what you want to do…",
     fakeStep = "Next: tap the highlighted control",
     demoModule = "Demo module (no real TRA/bank yet)",
+    guideStep = "Guide step",
+    guideSource = "Source",
+    sessionTimer = "Left: %d:%02d",
+    projectionHint = "You’ll get the system screen-share prompt. No Accessibility, contacts, SMS, or storage.",
 )

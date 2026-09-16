@@ -23,8 +23,10 @@ fun HomeScreen(
     useSwahili: Boolean,
     onToggleLanguage: () -> Unit,
     showCleared: Boolean,
+    timedOut: Boolean = false,
     onDismissCleared: () -> Unit,
     onHelp: () -> Unit,
+    guideModeLabel: String = "",
 ) {
     val c = copy(useSwahili)
     Column(
@@ -52,18 +54,31 @@ fun HomeScreen(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.secondary,
         )
+        if (guideModeLabel.isNotBlank()) {
+            Text(
+                guideModeLabel,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.secondary,
+            )
+        }
         if (showCleared) {
             Card(onClick = onDismissCleared, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    c.sessionCleared,
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.titleMedium,
-                )
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(c.sessionCleared, style = MaterialTheme.typography.titleMedium)
+                    if (timedOut) {
+                        Text(c.sessionTimedOut, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
             }
         }
-        Spacer(Modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         Button(onClick = onHelp, modifier = Modifier.fillMaxWidth()) {
             Text(c.homeHelp)
         }
+        Text(
+            c.projectionHint,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+        )
     }
 }

@@ -12,29 +12,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.dira.app.session.GuideUiState
 import com.dira.app.ui.copy
 import com.dira.app.ui.overlay.FakePointerOverlay
 
 @Composable
 fun GuideScreen(
     useSwahili: Boolean,
+    state: GuideUiState,
     onStop: () -> Unit,
+    onAskGuide: () -> Unit,
+    onQuestionChange: (String) -> Unit,
 ) {
     val c = copy(useSwahili)
-    var question by remember { mutableStateOf("") }
+    val minutes = (state.remainingMs / 60_000L).toInt()
+    val seconds = ((state.remainingMs % 60_000L) / 1000L).toInt()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -45,11 +47,18 @@ fun GuideScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                c.watching,
-                color = MaterialTheme.colorScheme.onSecondary,
-                style = MaterialTheme.typography.titleMedium,
-            )
+            Column {
+                Text(
+                    c.watching,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    c.sessionTimer.format(minutes, seconds),
+                    color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.8f),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
             Button(
                 onClick = onStop,
                 colors = ButtonDefaults.buttonColors(
@@ -86,9 +95,16 @@ fun GuideScreen(
                         .align(Alignment.End)
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color(0xFF546E7A)),
-                )
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("Submit", color = Color.White)
+                }
             }
-            FakePointerOverlay()
+            // Overlay driven by guide response fractions (not hardcoded forever).
+            FakePointerOverlay(
+                xFraction = state.pointX,
+                yFraction = state.pointY,
+            )
         }
 
         Column(
@@ -97,13 +113,37 @@ fun GuideScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(c.fakeStep, style = MaterialTheme.typography.titleMedium)
+            Text(state.instruction.ifBlank { c.fakeStep }, style = MaterialTheme.typography.titleMedium)
+            if (state.error != null) {
+                Text(state.error, color = MaterialTheme.colorScheme.error)
+            }
             OutlinedTextField(
-                value = question,
-                onValueChange = { question = it },
+                value = state.question,
+                onValueChange = onQuestionChange,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(c.askHint) },
                 singleLine = true,
+                enabled = !state.loading,
+            )
+            Button(
+                onClick = onAskGuide,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !state.loading && state.watching,
+            ) {
+                if (state.loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.height(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
+                } else {
+                    Text(c.guideStep)
+                }
+            }
+            Text(
+                "${c.guideSource}: ${state.guideSource}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.secondary,
             )
         }
     }

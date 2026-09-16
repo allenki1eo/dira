@@ -12,8 +12,14 @@ android {
         applicationId = "com.dira.app"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0-phase1"
+        versionCode = 2
+        versionName = "0.2.0-phase2"
+
+        // Empty GUIDE_API_BASE or USE_MOCK_GUIDE=true → mock heuristics (no backend needed).
+        val guideBase = (project.findProperty("GUIDE_API_BASE") as String?) ?: ""
+        val useMockProp = (project.findProperty("USE_MOCK_GUIDE") as String?) ?: "true"
+        buildConfigField("String", "GUIDE_API_BASE", "\"$guideBase\"")
+        buildConfigField("boolean", "USE_MOCK_GUIDE", useMockProp)
     }
 
     buildTypes {
@@ -30,7 +36,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -41,10 +50,12 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-compose:2.8.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
