@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dira</string>
+    <string name="consent_title">Before Dira can help</string>
+    <string name="consent_body">Dira is a temporary helper, not a recorder.\n\nWhen you tap Help, we may look at your screen only to show the next step. We do not keep bank or government screens. You can Stop anytime — then the session is cleared.\n\n(English · see Swahili in language toggle)</string>
+    <string name="consent_accept">I understand — continue</string>
+    <string name="home_title">Dira</string>
+    <string name="home_tagline">Your compass when software gets stuck</string>
+    <string name="home_help">Help me on this screen</string>
+    <string name="watching">Watching…</string>
+    <string name="stop">Stop watching</string>
+    <string name="session_cleared">Session cleared.</string>
+    <string name="ask_hint">Ask what you want to do…</string>
+    <string name="fake_step">Next: tap the highlighted control</string>
+    <string name="lang_sw">Kiswahili</string>
+    <string name="lang_en">English</string>
+    <string name="demo_module">Demo module (no real TRA/bank yet)</string>
+</resources>

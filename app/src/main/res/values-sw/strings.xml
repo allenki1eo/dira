@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dira</string>
+    <string name="consent_title">Kabla Dira iweze kukusaidia</string>
+    <string name="consent_body">Dira ni msaidizi wa muda, siyo kinasa skrini.\n\nUkibonyeza Saidia, tunaweza kuona skrini yako tu ili kuonyesha hatua inayofuata. Hatuhifadhi skrini za benki wala serikali. Unaweza Kubonyeza Simamisha wakati wowote — kisha kikao kinafutwa.\n\n(Kiswahili)</string>
+    <string name="consent_accept">Nimeelewa — endelea</string>
+    <string name="home_title">Dira</string>
+    <string name="home_tagline">Dira yako unapokwama kwenye programu</string>
+    <string name="home_help">Nisaidie kwenye skrini hii</string>
+    <string name="watching">Inatazama…</string>
+    <string name="stop">Acha kutazama</string>
+    <string name="session_cleared">Kikao kimefutwa.</string>
+    <string name="ask_hint">Uliza unachotaka kufanya…</string>
+    <string name="fake_step">Ifuatayo: bonyeza kidhibiti kilichoangaziwa</string>
+    <string name="lang_sw">Kiswahili</string>
+    <string name="lang_en">English</string>
+    <string name="demo_module">Moduli ya onyesho (bado hakuna TRA/benki)</string>
+</resources>
