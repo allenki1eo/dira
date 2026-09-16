@@ -21,7 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.dira.app.R
 import com.dira.app.session.GuideUiState
 import com.dira.app.ui.copy
 import com.dira.app.ui.overlay.FakePointerOverlay
@@ -47,17 +51,26 @@ fun GuideScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column {
-                Text(
-                    c.watching,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    style = MaterialTheme.typography.titleMedium,
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(R.drawable.dira_watching_mark),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(28.dp)
+                        .padding(end = 8.dp),
                 )
-                Text(
-                    c.sessionTimer.format(minutes, seconds),
-                    color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.8f),
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                Column {
+                    Text(
+                        c.watching,
+                        color = MaterialTheme.colorScheme.onSecondary,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        c.sessionTimer.format(minutes, seconds),
+                        color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.8f),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
             Button(
                 onClick = onStop,

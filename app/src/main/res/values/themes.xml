@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.Dira" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Dira.Splash" parent="Theme.Dira">
+        <item name="android:windowBackground">@drawable/dira_splash</item>
+    </style>
 </resources>

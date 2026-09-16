@@ -85,7 +85,7 @@ class ScreenCaptureService : Service() {
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.watching))
             .setContentText(getString(R.string.capture_notification_body))
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_dira)
             .setContentIntent(pending)
             .setOngoing(true)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
