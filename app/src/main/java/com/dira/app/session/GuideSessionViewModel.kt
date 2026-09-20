@@ -1,9 +1,11 @@
 package com.dira.app.session
 
 import android.app.Application
+import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.dira.app.BuildConfig
 import com.dira.app.capture.SanitizeStub
 import com.dira.app.capture.ScreenCaptureService
 import com.dira.app.capture.SessionFrameBuffer
@@ -26,13 +28,14 @@ data class GuideUiState(
     val watching: Boolean = false,
     val loading: Boolean = false,
     val instruction: String = "",
-    val pointX: Float = 0.72f,
-    val pointY: Float = 0.38f,
+    val pointX: Float = 0.50f,
+    val pointY: Float = 0.50f,
     val question: String = "",
     val error: String? = null,
     val sessionCleared: Boolean = false,
     val timedOut: Boolean = false,
-    val guideSource: String = if (GuideClientFactory.isMockMode()) "mock" else "api",
+    val guideSource: String = "mock",
+    val guideApiBase: String = "",
     val remainingMs: Long = SESSION_TIMEOUT_MS,
 ) {
     companion object {
@@ -41,40 +44,84 @@ data class GuideUiState(
 }
 
 /**
- * Orchestrates Help → capture → sanitize → guide → overlay target.
- * Session timeout 5 min + buffer wipe.
+ * Orchestrates Help → capture → downscale → guide → overlay target.
+ * Session timeout 5 min + buffer wipe. Frames never leave RAM except the
+ * in-flight POST to guide-server when a base URL is set.
  */
 class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
 
-    private val client: GuideApiClient = GuideClientFactory.create()
+    private val prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
-    private val _state = MutableStateFlow(GuideUiState())
-    val state: StateFlow<GuideUiState> = _state.asStateFlow()
+    private var client: GuideApiClient
+    private val _state: MutableStateFlow<GuideUiState>
+    val state: StateFlow<GuideUiState>
 
     private var timeoutJob: Job? = null
     private var tickerJob: Job? = null
     private var sessionStartedAt: Long = 0L
 
+    init {
+        val saved = prefs.getString(KEY_GUIDE_BASE, "") ?: ""
+        val initialBase = saved.ifBlank { BuildConfig.GUIDE_API_BASE }
+        client = GuideClientFactory.create(initialBase)
+        _state = MutableStateFlow(
+            GuideUiState(
+                guideSource = if (GuideClientFactory.isMockMode(initialBase)) "mock" else "api",
+                guideApiBase = GuideClientFactory.resolvedBase(initialBase),
+            ),
+        )
+        state = _state.asStateFlow()
+    }
+
+    fun updateGuideBase(url: String) {
+        if (_state.value.watching) return
+        val trimmed = url.trim()
+        prefs.edit().putString(KEY_GUIDE_BASE, trimmed).apply()
+        client = GuideClientFactory.create(trimmed)
+        _state.update {
+            it.copy(
+                guideApiBase = GuideClientFactory.resolvedBase(trimmed),
+                guideSource = if (GuideClientFactory.isMockMode(trimmed)) "mock" else "api",
+            )
+        }
+    }
+
     fun onCaptureStarted(useSwahili: Boolean) {
         (client as? MockGuideClient)?.reset()
         SessionFrameBuffer.shared.clear()
         sessionStartedAt = System.currentTimeMillis()
-        _state.value = GuideUiState(
-            watching = true,
-            instruction = if (useSwahili) {
-                "Inatazama… uliza swali au bonyeza Pata hatua."
-            } else {
-                "Watching… ask a question or tap Guide step."
-            },
-            guideSource = if (GuideClientFactory.isMockMode()) "mock" else "api",
-            remainingMs = GuideUiState.SESSION_TIMEOUT_MS,
-        )
+        val mock = GuideClientFactory.isMockMode(_state.value.guideApiBase)
+        _state.update {
+            it.copy(
+                watching = true,
+                loading = false,
+                error = null,
+                sessionCleared = false,
+                timedOut = false,
+                instruction = if (useSwahili) {
+                    if (mock) {
+                        "Inatazama… uliza swali au bonyeza Pata hatua."
+                    } else {
+                        "Inatazama… fungua programu unayotaka msaada, kisha bonyeza Pata hatua."
+                    }
+                } else {
+                    if (mock) {
+                        "Watching… ask a question or tap Guide step."
+                    } else {
+                        "Watching… switch to the app you need help with, then tap Guide step."
+                    }
+                },
+                remainingMs = GuideUiState.SESSION_TIMEOUT_MS,
+            )
+        }
         startTimeoutWatch()
-        // Auto first heuristic step shortly after capture starts (mock-friendly).
-        viewModelScope.launch {
-            delay(600)
-            if (_state.value.watching) {
-                requestStep(useSwahili = useSwahili, questionOverride = "")
+        // Auto first step is mock-only so we don't spend an API call on Dira's own UI.
+        if (mock) {
+            viewModelScope.launch {
+                delay(600)
+                if (_state.value.watching) {
+                    requestStep(useSwahili = useSwahili, questionOverride = "")
+                }
             }
         }
     }
@@ -96,7 +143,7 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
                     sanitizeNote = sanitized.note
                     jpeg = bitmapToJpeg(sanitized.bitmap)
                     if (!sanitized.bitmap.isRecycled) sanitized.bitmap.recycle()
-                    // Drop pixels from buffer after sanitize+encode (privacy: minimize retention).
+                    // Drop pixels from buffer after encode (privacy: minimize retention).
                     SessionFrameBuffer.shared.clear()
                 }
                 val response = client.requestGuidance(
@@ -138,11 +185,13 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
         SessionFrameBuffer.shared.clear()
         SessionFrameBuffer.resetShared()
         (client as? MockGuideClient)?.reset()
+        val base = _state.value.guideApiBase
         _state.value = GuideUiState(
             watching = false,
             sessionCleared = showCleared,
             timedOut = _state.value.timedOut,
-            guideSource = if (GuideClientFactory.isMockMode()) "mock" else "api",
+            guideSource = if (GuideClientFactory.isMockMode(base)) "mock" else "api",
+            guideApiBase = base,
         )
     }
 
@@ -184,5 +233,10 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
             SessionFrameBuffer.shared.clear()
         }
         super.onCleared()
+    }
+
+    companion object {
+        private const val PREFS = "dira_guide"
+        private const val KEY_GUIDE_BASE = "guide_api_base"
     }
 }

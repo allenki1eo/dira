@@ -14,7 +14,7 @@ import com.dira.app.ui.screens.HomeScreen
 enum class DiraRoute { Consent, Home, Guide }
 
 /**
- * Phase 2: Consent → Home → (MediaProjection permission) → Guide
+ * Consent → Home → (MediaProjection permission) → Guide
  * Overlay driven by guide targets; Stop / timeout clears session buffer.
  */
 @Composable
@@ -24,6 +24,7 @@ fun DiraApp(
     onStop: () -> Unit,
     onAskGuide: (useSwahili: Boolean) -> Unit,
     onQuestionChange: (String) -> Unit,
+    onGuideBaseChange: (String) -> Unit,
     onDismissCleared: () -> Unit,
 ) {
     var route by remember { mutableStateOf(DiraRoute.Consent) }
@@ -50,6 +51,8 @@ fun DiraApp(
             timedOut = sessionState.timedOut,
             onDismissCleared = onDismissCleared,
             onHelp = { onHelp(useSwahili) },
+            guideApiBase = sessionState.guideApiBase,
+            onGuideBaseChange = onGuideBaseChange,
             guideModeLabel = if (sessionState.guideSource == "mock") {
                 if (useSwahili) "Hali ya onyesho (bila seva)" else "Mock guide (no backend)"
             } else {

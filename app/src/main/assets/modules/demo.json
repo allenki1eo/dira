@@ -1,7 +1,7 @@
 {
-  "id": "demo.ui",
-  "displayName": { "en": "Demo module (no real TRA/bank yet)", "sw": "Moduli ya onyesho (bado hakuna TRA/benki)" },
+  "id": "generic.android",
+  "displayName": { "en": "Generic Android UI coach", "sw": "Mwongozo wa UI wa Android" },
   "sensitivity": "low",
-  "commonTasks": ["Find the action button", "Submit the form", "Finish the task"],
-  "pitfalls": ["Do not enter real bank or TRA credentials into Dira chat"]
+  "commonTasks": ["Find the next button", "Open the overflow menu", "Go back"],
+  "pitfalls": ["Do not type passwords, OTPs, or account numbers into Dira"]
 }

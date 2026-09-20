@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -86,38 +88,33 @@ fun GuideScreen(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(16.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFF263238)),
+                .padding(16.dp),
+            contentAlignment = Alignment.Center,
         ) {
             Column(
-                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxHeight(),
             ) {
-                Text("Demo UI", color = Color.White, style = MaterialTheme.typography.titleLarge)
                 Text(
-                    c.demoModule,
-                    color = Color.White.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.bodyMedium,
+                    c.tapMapLabel,
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.labelLarge,
                 )
                 Box(
                     modifier = Modifier
-                        .padding(top = 48.dp)
-                        .height(48.dp)
-                        .fillMaxWidth(0.45f)
-                        .align(Alignment.End)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF546E7A)),
-                    contentAlignment = Alignment.Center,
+                        .weight(1f)
+                        .aspectRatio(9f / 16f)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(Color(0xFF263238)),
                 ) {
-                    Text("Submit", color = Color.White)
+                    // Pointer fractions are 0–1 of the captured screen, shown on this map.
+                    FakePointerOverlay(
+                        xFraction = state.pointX,
+                        yFraction = state.pointY,
+                    )
                 }
             }
-            // Overlay driven by guide response fractions (not hardcoded forever).
-            FakePointerOverlay(
-                xFraction = state.pointX,
-                yFraction = state.pointY,
-            )
         }
 
         Column(

@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -27,12 +30,15 @@ fun HomeScreen(
     onDismissCleared: () -> Unit,
     onHelp: () -> Unit,
     guideModeLabel: String = "",
+    guideApiBase: String = "",
+    onGuideBaseChange: (String) -> Unit = {},
 ) {
     val c = copy(useSwahili)
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -61,6 +67,14 @@ fun HomeScreen(
                 color = MaterialTheme.colorScheme.secondary,
             )
         }
+        OutlinedTextField(
+            value = guideApiBase,
+            onValueChange = onGuideBaseChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("http://192.168.1.10:8787") },
+            label = { Text(c.serverUrlHint) },
+            singleLine = true,
+        )
         if (showCleared) {
             Card(onClick = onDismissCleared, modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
