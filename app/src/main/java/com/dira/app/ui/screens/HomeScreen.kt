@@ -34,6 +34,9 @@ fun HomeScreen(
     onGuideBaseChange: (String) -> Unit = {},
     overlayActive: Boolean = false,
     onStopOverlay: () -> Unit = {},
+    overlayRestricted: Boolean = false,
+    onOpenAppInfo: () -> Unit = {},
+    onContinueWithoutBubble: () -> Unit = {},
 ) {
     val c = copy(useSwahili)
     Column(
@@ -92,6 +95,20 @@ fun HomeScreen(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
         )
+        if (overlayRestricted && !overlayActive) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(c.overlayRestrictedTitle, style = MaterialTheme.typography.titleMedium)
+                    Text(c.overlayRestrictedBody, style = MaterialTheme.typography.bodyMedium)
+                    Button(onClick = onOpenAppInfo, modifier = Modifier.fillMaxWidth()) {
+                        Text(c.openAppInfo)
+                    }
+                    Button(onClick = onContinueWithoutBubble, modifier = Modifier.fillMaxWidth()) {
+                        Text(c.continueWithoutBubble)
+                    }
+                }
+            }
+        }
         if (overlayActive) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

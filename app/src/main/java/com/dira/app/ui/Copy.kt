@@ -23,6 +23,10 @@ data class DiraCopy(
     val tapMapLabel: String,
     val overlayActive: String,
     val overlayHelp: String,
+    val overlayRestrictedTitle: String,
+    val overlayRestrictedBody: String,
+    val openAppInfo: String,
+    val continueWithoutBubble: String,
 )
 
 fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
@@ -50,6 +54,10 @@ fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     tapMapLabel = "Sehemu ya kubonyeza kwenye skrini yako",
     overlayActive = "Kiputo kiko hai. Fungua programu unayotaka, kisha bonyeza kiputo cha D.",
     overlayHelp = "Tutachora kiputo juu ya programu zingine. Bonyeza ili kuandika au kushiriki sauti — kisha kielekezi na sauti vitaonyesha mahali pa kubonyeza (Gmail, WhatsApp, Chrome, na programu nyinginezo).",
+    overlayRestrictedTitle = "Android imezuia kiputo",
+    overlayRestrictedBody = "Si hitilafu ya Dira. Programu zilizowekwa nje ya Play Store (sideload) haziwezi kuchora juu ya programu zingine hadi ufungue mipangilio iliyozuiliwa:\n\n1. Bonyeza Fungua taarifa ya Dira\n2. Bonyeza ⋮ (juu kulia) → Ruhusu mipangilio iliyozuiliwa\n3. Rudi, bonyeza Saidia tena, kisha washa Onyesha juu ya programu zingine.\n\nWakati huo unaweza kutumia ramani ya kubonyeza ndani ya Dira.",
+    openAppInfo = "Fungua taarifa ya Dira",
+    continueWithoutBubble = "Endelea bila kiputo",
 ) else DiraCopy(
     consentTitle = "Before Dira can help",
     consentBody = "Dira is a temporary Android UI helper, not a recorder.\n\n" +
@@ -75,4 +83,8 @@ fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     tapMapLabel = "Tap target on your screen",
     overlayActive = "The bubble is live. Open the app you need, then tap the D bubble.",
     overlayHelp = "We'll draw a bubble over other apps. Tap it to type or send a voice note — then a highlight and spoken step show where to tap (Gmail, WhatsApp, Chrome, and other everyday apps).",
+    overlayRestrictedTitle = "Android blocked the bubble",
+    overlayRestrictedBody = "This is not a Dira bug. Sideloaded apps cannot draw over other apps until you unlock Restricted settings:\n\n1. Tap Open Dira app info\n2. Tap ⋮ (top right) → Allow restricted settings\n3. Come back, tap Help again, then turn on Display over other apps.\n\nUntil then you can still use the in-app tap map.",
+    openAppInfo = "Open Dira app info",
+    continueWithoutBubble = "Continue without the bubble",
 )

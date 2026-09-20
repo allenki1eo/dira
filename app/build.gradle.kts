@@ -12,8 +12,8 @@ android {
         applicationId = "com.dira.app"
         minSdk = 29
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.5.0-voice-precision"
+        versionCode = 6
+        versionName = "0.5.1-restricted-settings"
 
         // Real guide when GUIDE_API_BASE is non-empty (unless USE_MOCK_GUIDE=true).
         // Also overridable at runtime on the Home screen for sideloaded trial APKs.

@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
                     val vm: GuideSessionViewModel = viewModel()
                     val sessionState by vm.state.collectAsState()
                     var pendingLanguageSw by remember { mutableStateOf(false) }
+                    var overlayRestricted by remember { mutableStateOf(false) }
 
                     val projectionLauncher = rememberLauncherForActivityResult(
                         ActivityResultContracts.StartActivityForResult(),
@@ -96,9 +97,7 @@ class MainActivity : ComponentActivity() {
                         afterMic()
                     }
 
-                    val overlayLauncher = rememberLauncherForActivityResult(
-                        ActivityResultContracts.StartActivityForResult(),
-                    ) {
+                    fun continueAfterOverlay() {
                         if (ContextCompat.checkSelfPermission(
                                 this@MainActivity,
                                 Manifest.permission.RECORD_AUDIO,
@@ -107,6 +106,19 @@ class MainActivity : ComponentActivity() {
                             micLauncher.launch(Manifest.permission.RECORD_AUDIO)
                         } else {
                             afterMic()
+                        }
+                    }
+
+                    val overlayLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.StartActivityForResult(),
+                    ) {
+                        if (Settings.canDrawOverlays(this@MainActivity)) {
+                            overlayRestricted = false
+                            continueAfterOverlay()
+                        } else {
+                            // Sideloaded apps hit Android Restricted settings / Enhanced
+                            // Confirmation — "App was denied access" — not a Dira crash.
+                            overlayRestricted = true
                         }
                     }
 
@@ -121,6 +133,7 @@ class MainActivity : ComponentActivity() {
                             )
                             return
                         }
+                        overlayRestricted = false
                         if (ContextCompat.checkSelfPermission(
                                 this@MainActivity,
                                 Manifest.permission.RECORD_AUDIO,
@@ -140,6 +153,19 @@ class MainActivity : ComponentActivity() {
                         onQuestionChange = vm::onQuestionChange,
                         onGuideBaseChange = vm::updateGuideBase,
                         onDismissCleared = vm::consumeClearedFlag,
+                        overlayRestricted = overlayRestricted,
+                        onOpenAppInfo = {
+                            startActivity(
+                                Intent(
+                                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                    Uri.parse("package:$packageName"),
+                                ),
+                            )
+                        },
+                        onContinueWithoutBubble = {
+                            overlayRestricted = false
+                            continueAfterOverlay()
+                        },
                     )
                 }
             }

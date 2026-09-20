@@ -25,6 +25,9 @@ fun DiraApp(
     onQuestionChange: (String) -> Unit,
     onGuideBaseChange: (String) -> Unit,
     onDismissCleared: () -> Unit,
+    overlayRestricted: Boolean = false,
+    onOpenAppInfo: () -> Unit = {},
+    onContinueWithoutBubble: () -> Unit = {},
 ) {
     var route by remember { mutableStateOf(DiraRoute.Consent) }
     var useSwahili by remember { mutableStateOf(false) }
@@ -55,6 +58,9 @@ fun DiraApp(
             onGuideBaseChange = onGuideBaseChange,
             overlayActive = sessionState.watching && sessionState.overlayMode,
             onStopOverlay = onStop,
+            overlayRestricted = overlayRestricted,
+            onOpenAppInfo = onOpenAppInfo,
+            onContinueWithoutBubble = onContinueWithoutBubble,
             guideModeLabel = if (sessionState.guideSource == "mock") {
                 if (useSwahili) "Hali ya onyesho (bila seva)" else "Mock guide (no backend)"
             } else {

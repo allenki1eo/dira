@@ -4,7 +4,7 @@ Phone-first Android live screen guide (Kotlin + Jetpack Compose).
 
 Generic **Android UI coach** for arbitrary apps on a phone. No TRA / bank / PEPMIS / institution-specific playbooks.
 
-Package: `com.dira.app` · minSdk 29 (Android 10+) · version `0.5.0-voice-precision`
+Package: `com.dira.app` · minSdk 29 (Android 10+) · version `0.5.1-restricted-settings`
 
 ## Phase status
 
@@ -51,6 +51,17 @@ If the phone shows **Cloudflare 502**, the tunnel in front of `guide-server/` is
 If overlay permission is denied, Dira falls back to the in-app guide screen.
 
 The trial APK does **not** register an Accessibility service. Play Protect often **hard-blocks** sideloaded apps that combine overlay + Accessibility + screen capture (it looks like banking malware). Guidance still uses the live screenshot.
+
+### “App was denied access” on Display over other apps
+
+That dialog is **Android Restricted settings** (Android 13+, tighter on 15+), not a Dira crash and not a Play policy violation. Overlay is a sensitive permission; sideloaded APKs cannot turn it on until you unlock it:
+
+1. Close the denial dialog.
+2. Settings → Apps → **Dira** (or tap **Open Dira app info** in the app).
+3. Tap **⋮** (top right) → **Allow restricted settings**. Unlock with PIN/fingerprint if asked.
+4. Return to **Display over other apps** and enable Dira, then tap Help again.
+
+Until that toggle is on, Dira can still run the in-app tap map (Continue without the bubble).
 
 ### Bake `GUIDE_API_BASE` into a local APK
 
