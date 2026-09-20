@@ -3,14 +3,20 @@ package com.dira.app.guide
 import com.dira.app.BuildConfig
 
 object GuideClientFactory {
-    fun create(): GuideApiClient {
-        val base = BuildConfig.GUIDE_API_BASE.trim()
-        val useMock = BuildConfig.USE_MOCK_GUIDE || base.isEmpty()
-        return if (useMock) MockGuideClient() else HttpGuideClient(base)
+    fun resolvedBase(runtimeBase: String? = null): String {
+        val runtime = runtimeBase?.trim().orEmpty()
+        if (runtime.isNotEmpty()) return runtime.trimEnd('/')
+        return BuildConfig.GUIDE_API_BASE.trim().trimEnd('/')
     }
 
-    fun isMockMode(): Boolean {
-        val base = BuildConfig.GUIDE_API_BASE.trim()
-        return BuildConfig.USE_MOCK_GUIDE || base.isEmpty()
+    /** Mock when forced, or when no base URL is configured. */
+    fun isMockMode(runtimeBase: String? = null): Boolean {
+        if (BuildConfig.USE_MOCK_GUIDE) return true
+        return resolvedBase(runtimeBase).isEmpty()
+    }
+
+    fun create(runtimeBase: String? = null): GuideApiClient {
+        val base = resolvedBase(runtimeBase)
+        return if (isMockMode(runtimeBase)) MockGuideClient() else HttpGuideClient(base)
     }
 }

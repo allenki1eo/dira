@@ -1,0 +1,14 @@
+{
+  "name": "dira-guide-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Ephemeral OpenRouter vision proxy for Dira. Does not store screenshots.",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test parse.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -12,12 +12,17 @@ android {
         applicationId = "com.dira.app"
         minSdk = 29
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2.0-phase2"
+        versionCode = 3
+        versionName = "0.3.0-openrouter-trial"
 
-        // Empty GUIDE_API_BASE or USE_MOCK_GUIDE=true → mock heuristics (no backend needed).
-        val guideBase = (project.findProperty("GUIDE_API_BASE") as String?) ?: ""
-        val useMockProp = (project.findProperty("USE_MOCK_GUIDE") as String?) ?: "true"
+        // Real guide when GUIDE_API_BASE is non-empty (unless USE_MOCK_GUIDE=true).
+        // Also overridable at runtime on the Home screen for sideloaded trial APKs.
+        val guideBase = (project.findProperty("GUIDE_API_BASE") as String?)
+            ?: System.getenv("GUIDE_API_BASE")
+            ?: ""
+        val useMockProp = (project.findProperty("USE_MOCK_GUIDE") as String?)
+            ?: System.getenv("USE_MOCK_GUIDE")
+            ?: "false"
         buildConfigField("String", "GUIDE_API_BASE", "\"$guideBase\"")
         buildConfigField("boolean", "USE_MOCK_GUIDE", useMockProp)
     }

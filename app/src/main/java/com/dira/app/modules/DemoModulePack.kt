@@ -1,8 +1,8 @@
 package com.dira.app.modules
 
 /**
- * Pluggable module pack rails — demo only in Phase 2.
- * No hardcoded TRA/bank production modules.
+ * Pluggable module pack rails — generic Android UI coach only.
+ * No TRA / bank / PEPMIS / institution-specific playbooks.
  */
 data class ModulePack(
     val id: String,
@@ -14,10 +14,14 @@ data class ModulePack(
 
 object DemoModulePack {
     val pack = ModulePack(
-        id = "demo.ui",
-        displayNameEn = "Demo module (no real TRA/bank yet)",
-        displayNameSw = "Moduli ya onyesho (bado hakuna TRA/benki)",
+        id = "generic.android",
+        displayNameEn = "Generic Android UI coach",
+        displayNameSw = "Mwongozo wa UI wa Android",
         sensitivity = "low",
-        commonTasks = listOf("Find the action button", "Submit the form", "Finish the task"),
+        commonTasks = listOf(
+            "Find the next button",
+            "Open the overflow menu",
+            "Go back",
+        ),
     )
 }

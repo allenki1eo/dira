@@ -1,0 +1,156 @@
+name: Android debug APK
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  guide-server-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Test guide-server JSON parser
+        working-directory: guide-server
+        run: npm test
+
+  assemble-debug:
+    # ubuntu-24.04 already ships ANDROID_HOME with platforms;android-35 and
+    # build-tools 35.x. Do not use android-actions/setup-android@v3 — it still
+    # tries to install the removed `tools` package and fails.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Point Gradle at the runner Android SDK
+        run: |
+          set -euo pipefail
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          if [ ! -d "$SDK" ]; then
+            echo "Android SDK not found at $SDK"
+            exit 1
+          fi
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "sdk.dir=$SDK" > local.properties
+          echo "Using Android SDK at $SDK"
+          ls "$SDK/platforms" || true
+          if [ ! -d "$SDK/platforms/android-35" ]; then
+            SDKMANAGER="$(find "$SDK/cmdline-tools" -name sdkmanager -type f | head -n1)"
+            if [ -z "$SDKMANAGER" ]; then
+              echo "sdkmanager not found under $SDK/cmdline-tools"
+              exit 1
+            fi
+            yes | "$SDKMANAGER" --licenses >/dev/null || true
+            "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
+          fi
+
+      - name: Assemble debug APK
+        env:
+          # Optional: bake a public HTTPS origin into this APK (never the OpenRouter key).
+          GUIDE_API_BASE: ${{ secrets.GUIDE_API_BASE }}
+        run: |
+          chmod +x gradlew
+          ARGS=()
+          if [ -n "${GUIDE_API_BASE:-}" ]; then
+            ARGS+=(-PUSE_MOCK_GUIDE=false "-PGUIDE_API_BASE=${GUIDE_API_BASE}")
+          fi
+          ./gradlew :app:assembleDebug --no-daemon "${ARGS[@]}"
+
+      - name: Stage APK
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/dira-debug.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dira-debug-apk
+          path: dist/dira-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Attach APK to trial-apk prerelease
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: trial-apk
+          name: Dira trial debug APK
+          prerelease: true
+          generate_release_notes: false
+          body: |
+            Sideload this **debug** APK. It does not contain an OpenRouter API key.
+            Point the app at a running `guide-server/` (`GUIDE_API_BASE` or the in-app server URL).
+          files: dist/dira-debug.apk
+
+      - name: Attach APK to a PR prerelease
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-pr-${{ github.event.pull_request.number }}
+          name: Dira debug APK (PR #${{ github.event.pull_request.number }})
+          prerelease: true
+          generate_release_notes: false
+          body: |
+            Debug APK from ${{ github.sha }}.
+            Sideload `dira-debug.apk`. Do not ship this build. The OpenRouter key stays on `guide-server/`.
+          files: dist/dira-debug.apk
+
+      - name: Comment APK links on the PR
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            const releaseUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/releases/tag/apk-pr-${context.issue.number}`;
+            const apkUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/releases/download/apk-pr-${context.issue.number}/dira-debug.apk`;
+            const body = [
+              '## Trial debug APK',
+              '',
+              `- Direct download: ${apkUrl}`,
+              `- Release: ${releaseUrl}`,
+              `- Workflow artifacts: ${runUrl}`,
+              '',
+              'Sideload the debug APK (Android 10+). It does **not** embed `OPENROUTER_API_KEY`. Run `guide-server/` and set the in-app Guide server URL (or rebuild with `-PGUIDE_API_BASE=...`).',
+            ].join('\n');
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes('## Trial debug APK'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

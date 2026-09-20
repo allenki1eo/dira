@@ -10,9 +10,11 @@ import java.net.URL
 import java.util.Base64
 
 /**
- * Real HTTPS client for a future FastAPI/Node guide endpoint.
+ * HTTPS (or debug HTTP) client for guide-server.
  * POST {base}/v1/guide with JSON: question, moduleId, language, imageBase64?, sanitizeNote?
  * Expects JSON: instructionEn, instructionSw, pointX, pointY, done?
+ *
+ * The OpenRouter API key stays on the server — never in this APK.
  */
 class HttpGuideClient(
     private val baseUrl: String,
@@ -24,8 +26,9 @@ class HttpGuideClient(
             val url = URL("$root/v1/guide")
             val conn = (url.openConnection() as HttpURLConnection).apply {
                 requestMethod = "POST"
-                connectTimeout = 15_000
-                readTimeout = 30_000
+                connectTimeout = 20_000
+                // Vision models can be slow on the free tier.
+                readTimeout = 90_000
                 doOutput = true
                 setRequestProperty("Content-Type", "application/json; charset=utf-8")
                 setRequestProperty("Accept", "application/json")

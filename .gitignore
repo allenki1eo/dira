@@ -8,3 +8,7 @@
 /captures
 .externalNativeBuild
 .cxx
+guide-server/node_modules/
+guide-server/.env
+*.apk
+*.aab

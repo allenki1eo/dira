@@ -85,6 +85,7 @@ class MainActivity : ComponentActivity() {
                         onStop = { vm.stopSession(showCleared = true) },
                         onAskGuide = { useSwahili -> vm.requestStep(useSwahili) },
                         onQuestionChange = vm::onQuestionChange,
+                        onGuideBaseChange = vm::updateGuideBase,
                         onDismissCleared = vm::consumeClearedFlag,
                     )
                 }
