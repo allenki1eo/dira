@@ -66,12 +66,23 @@ class HttpGuideClient(
                 error(friendlyHttpError(code, text))
             }
             val json = JSONObject(text)
+            val pointX = frac(json, "pointX", 0.5)
+            val pointY = frac(json, "pointY", 0.5)
             return GuideResponse(
                 step = GuideStep(
                     instructionEn = json.optString("instructionEn", json.optString("instruction", "")),
                     instructionSw = json.optString("instructionSw", json.optString("instructionEn", "")),
-                    pointXFraction = json.optDouble("pointX", 0.5).toFloat().coerceIn(0f, 1f),
-                    pointYFraction = json.optDouble("pointY", 0.5).toFloat().coerceIn(0f, 1f),
+                    spokenEn = json.optString("spokenEn", json.optString("spoken", "")),
+                    spokenSw = json.optString("spokenSw", ""),
+                    appGuess = json.optString("appGuess", json.optString("app", "")),
+                    targetLabel = json.optString("targetLabel", json.optString("label", "")),
+                    pointXFraction = pointX,
+                    pointYFraction = pointY,
+                    boxXFraction = optFrac(json, "boxX"),
+                    boxYFraction = optFrac(json, "boxY"),
+                    boxWFraction = optFrac(json, "boxW"),
+                    boxHFraction = optFrac(json, "boxH"),
+                    confidence = frac(json, "confidence", 0.55),
                     done = json.optBoolean("done", false),
                 ),
                 source = "api",
@@ -80,6 +91,22 @@ class HttpGuideClient(
             conn.disconnect()
         }
     }
+}
+
+internal fun frac(json: JSONObject, key: String, fallback: Double): Float {
+    if (!json.has(key) || json.isNull(key)) return fallback.toFloat()
+    val n = json.optDouble(key, fallback)
+    if (!n.isFinite()) return fallback.toFloat()
+    val v = if (n >= 10.0 && n <= 100.0) n / 100.0 else n
+    return v.toFloat().coerceIn(0f, 1f)
+}
+
+internal fun optFrac(json: JSONObject, key: String): Float {
+    if (!json.has(key) || json.isNull(key)) return Float.NaN
+    val n = json.optDouble(key, Double.NaN)
+    if (!n.isFinite()) return Float.NaN
+    val v = if (n >= 10.0 && n <= 100.0) n / 100.0 else n
+    return v.toFloat().coerceIn(0f, 1f)
 }
 
 internal fun friendlyHttpError(code: Int, raw: String): String {

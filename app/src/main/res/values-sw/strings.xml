@@ -21,12 +21,13 @@
     <string name="guide_step">Pata hatua</string>
     <string name="a11y_description">Dira inasoma vidhibiti vya skrini katika programu unayotumia ili kuonyesha mahali pa kubonyeza. Haibonyezi kwa niaba yako, wala haihifadhi mti.</string>
     <string name="overlay_ask_hint">Fungua programu unayotaka, kisha mwambie Dira unachotaka — andika au sauti.</string>
-    <string name="overlay_ready">Bonyeza kiputo cha D katika programu yoyote. Andika au sema, kisha Pata hatua — kielekezi kitaonekana kwenye skrini hiyo.</string>
-    <string name="overlay_ready_sw">Bonyeza kiputo cha D katika programu yoyote. Andika au sema, kisha Pata hatua — kielekezi kitaonekana kwenye skrini hiyo.</string>
+    <string name="overlay_ready">Bonyeza kiputo cha D katika programu yoyote. Andika au sema, kisha Pata hatua — Dira inaonyesha kidhibiti na kusoma hatua kwa sauti.</string>
+    <string name="overlay_ready_sw">Bonyeza kiputo cha D katika programu yoyote. Andika au sema, kisha Pata hatua — Dira inaonyesha kidhibiti na kusoma hatua kwa sauti.</string>
     <string name="overlay_thinking">Inatazama skrini hii…</string>
     <string name="overlay_voice">Sauti</string>
     <string name="overlay_listening">Inasikiliza…</string>
     <string name="overlay_mic_needed">Ruhusu maikrofoni katika mipangilio ya Dira kutumia sauti.</string>
     <string name="overlay_voice_unavailable">Utambuzi wa sauti haupatikani. Andika badala yake.</string>
     <string name="overlay_voice_failed">Sikusikia. Jaribu tena au andika.</string>
+    <string name="overlay_hear_again">Sikiliza tena</string>
 </resources>

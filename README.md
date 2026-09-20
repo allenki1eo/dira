@@ -4,7 +4,7 @@ Phone-first Android live screen guide (Kotlin + Jetpack Compose).
 
 Generic **Android UI coach** for arbitrary apps on a phone. No TRA / bank / PEPMIS / institution-specific playbooks.
 
-Package: `com.dira.app` · minSdk 29 (Android 10+) · version `0.4.0-overlay-bubble`
+Package: `com.dira.app` · minSdk 29 (Android 10+) · version `0.5.0-voice-precision`
 
 ## Phase status
 
@@ -14,7 +14,7 @@ Package: `com.dira.app` · minSdk 29 (Android 10+) · version `0.4.0-overlay-bub
 | 1 Skeleton | Done — Consent → Home → Guide, Watching/Stop, pointer |
 | 2 Live loop | Done — MediaProjection, in-memory frames, mock/API client, overlay, 5‑min timeout |
 | OpenRouter trial | Done — `guide-server/` vision proxy + debug APK workflow |
-| **Overlay bubble** | **This tree** — draw-over-apps bubble, voice/type, pointer on the real app, optional UI tree |
+| **Overlay bubble** | **This tree** — draw-over-apps bubble, voice in + spoken out, precision box on the real app |
 | Institution modules | Out of scope — do not add TRA/bank/PEPMIS scripts |
 
 ## Phone trial (sideload)
@@ -46,7 +46,7 @@ If the phone shows **Cloudflare 502**, the tunnel in front of `guide-server/` is
 
 ### Overlay bubble (draw over other apps)
 
-4. Consent → **Help me on this screen** → allow **Display over other apps** → optional mic → screen capture → Dira sends you back to the home screen with a **D bubble**. Open Gmail (or any app) → tap the bubble → type or **Voice** → **Guide step**. A pointer is drawn on that app. Stop watching wipes the in-memory frame.
+4. Consent → **Help me on this screen** → allow **Display over other apps** → optional mic → screen capture → Dira sends you back to the home screen with a **D bubble**. Open Gmail, WhatsApp, Chrome, YouTube, Settings, or any app → tap the bubble → type or **Voice** → **Guide step**. A **tight highlight** is drawn on that control and Dira **speaks** the step. **Hear again** repeats it. Stop watching wipes the in-memory frame.
 
 If overlay permission is denied, Dira falls back to the in-app guide screen.
 
@@ -64,8 +64,8 @@ The trial APK does **not** register an Accessibility service. Play Protect often
 
 Expected API: `POST {GUIDE_API_BASE}/v1/guide`  
 JSON body `{ question, moduleId, language, imageBase64?, sanitizeNote? }`  
-→ `{ instructionEn, instructionSw, pointX, pointY, done? }`  
-`pointX` / `pointY` are normalized **0–1** fractions of the screenshot (top-left origin).
+→ `{ instructionEn, instructionSw, spokenEn, spokenSw, appGuess, targetLabel, pointX, pointY, boxX, boxY, boxW, boxH, confidence, done? }`  
+`pointX` / `pointY` are the tap center; `boxX`/`boxY`/`boxW`/`boxH` is a tight 0–1 box around that control (top-left origin). Restart `guide-server` after pulling prompt changes so the phone trial uses the new schema.
 
 ## OpenRouter
 
@@ -76,7 +76,7 @@ JSON body `{ question, moduleId, language, imageBase64?, sanitizeNote? }`
 | `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1/chat/completions` | Chat Completions |
 | `PORT` / `HOST` | `8787` / `0.0.0.0` | Bind address |
 
-The model is prompted as a **generic Android UI coach**: one next tap, both EN/SW text, coordinates 0–1. It is instructed not to emit institution-specific playbooks.
+The model is prompted as a **generic Android UI coach** with Material chrome + landmarks for popular apps (Gmail, WhatsApp, Chrome, YouTube, Instagram, Facebook, Telegram, TikTok, Settings, Play Store, Phone, Messages, Maps, Photos, Camera, Clock, Calendar, Drive, Docs, Meet, Slack, X, LinkedIn, Spotify, Netflix, Amazon). One next tap, spoken EN/SW, a tight bounding box, coordinates 0–1. It is instructed not to emit institution-specific playbooks.
 
 ## Privacy
 

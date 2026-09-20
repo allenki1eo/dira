@@ -49,7 +49,7 @@ fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     serverUrlHint = "URL ya seva ya mwongozo (acha tupu = onyesho)",
     tapMapLabel = "Sehemu ya kubonyeza kwenye skrini yako",
     overlayActive = "Kiputo kiko hai. Fungua programu unayotaka, kisha bonyeza kiputo cha D.",
-    overlayHelp = "Tutachora kiputo juu ya programu zingine. Bonyeza ili kuandika au kushiriki sauti — kisha kielekezi kitaonyesha mahali pa kubonyeza.",
+    overlayHelp = "Tutachora kiputo juu ya programu zingine. Bonyeza ili kuandika au kushiriki sauti — kisha kielekezi na sauti vitaonyesha mahali pa kubonyeza (Gmail, WhatsApp, Chrome, na programu nyinginezo).",
 ) else DiraCopy(
     consentTitle = "Before Dira can help",
     consentBody = "Dira is a temporary Android UI helper, not a recorder.\n\n" +
@@ -74,5 +74,5 @@ fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     serverUrlHint = "Guide server URL (blank = mock)",
     tapMapLabel = "Tap target on your screen",
     overlayActive = "The bubble is live. Open the app you need, then tap the D bubble.",
-    overlayHelp = "We'll draw a bubble over other apps. Tap it to type or send a voice note — then a pointer shows where to tap.",
+    overlayHelp = "We'll draw a bubble over other apps. Tap it to type or send a voice note — then a highlight and spoken step show where to tap (Gmail, WhatsApp, Chrome, and other everyday apps).",
 )

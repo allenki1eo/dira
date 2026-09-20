@@ -12,7 +12,6 @@ import com.dira.app.capture.SessionFrameBuffer
 import com.dira.app.guide.GuideApiClient
 import com.dira.app.guide.GuideClientFactory
 import com.dira.app.guide.GuideRequest
-import com.dira.app.guide.GuideStep
 import com.dira.app.guide.MockGuideClient
 import com.dira.app.modules.DemoModulePack
 import com.dira.app.overlay.CoachBus
@@ -40,6 +39,11 @@ data class GuideUiState(
     val guideApiBase: String = "",
     val remainingMs: Long = SESSION_TIMEOUT_MS,
     val overlayMode: Boolean = false,
+    val boxX: Float = Float.NaN,
+    val boxY: Float = Float.NaN,
+    val boxW: Float = Float.NaN,
+    val boxH: Float = Float.NaN,
+    val targetLabel: String = "",
 ) {
     companion object {
         const val SESSION_TIMEOUT_MS = 5 * 60 * 1000L
@@ -202,12 +206,18 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
                     ),
                 )
                 val step = response.step
+                val box = step.resolvedBox()
                 _state.update {
                     it.copy(
                         loading = false,
-                        instruction = stepText(step, useSwahili),
+                        instruction = step.chipText(useSwahili),
                         pointX = step.pointXFraction.coerceIn(0f, 1f),
                         pointY = step.pointYFraction.coerceIn(0f, 1f),
+                        boxX = box[0],
+                        boxY = box[1],
+                        boxW = box[2],
+                        boxH = box[3],
+                        targetLabel = step.targetLabel,
                         guideSource = response.source,
                     )
                 }
@@ -265,10 +275,7 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun stepText(step: GuideStep, useSwahili: Boolean): String =
-        if (useSwahili) step.instructionSw else step.instructionEn
-
-    private fun bitmapToJpeg(bitmap: Bitmap, quality: Int = 70): ByteArray {
+    private fun bitmapToJpeg(bitmap: Bitmap, quality: Int = 82): ByteArray {
         val out = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, out)
         return out.toByteArray()

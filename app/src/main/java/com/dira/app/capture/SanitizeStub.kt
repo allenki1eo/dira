@@ -16,7 +16,7 @@ object SanitizeStub {
         val note: String = "downscale-only",
     )
 
-    private const val MAX_EDGE = 720
+    private const val MAX_EDGE = 1080
 
     fun sanitize(source: Bitmap): SanitizedFrame {
         val w = source.width.coerceAtLeast(1)

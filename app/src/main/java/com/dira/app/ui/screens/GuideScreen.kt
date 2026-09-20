@@ -112,6 +112,11 @@ fun GuideScreen(
                     FakePointerOverlay(
                         xFraction = state.pointX,
                         yFraction = state.pointY,
+                        boxX = state.boxX,
+                        boxY = state.boxY,
+                        boxW = state.boxW,
+                        boxH = state.boxH,
+                        label = state.targetLabel,
                     )
                 }
             }
