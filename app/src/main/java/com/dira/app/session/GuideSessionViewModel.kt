@@ -256,6 +256,20 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
         _state.update { it.copy(sessionCleared = false, timedOut = false) }
     }
 
+    /** Overlay permission arrived after an in-app session had already started. */
+    fun promoteToOverlay(useSwahili: Boolean) {
+        if (!_state.value.watching || _state.value.overlayMode) return
+        val instruction = if (useSwahili) {
+            "Kiputo cha Dira kiko juu ya programu zingine. Fungua programu, kisha bonyeza kiputo."
+        } else {
+            "The Dira bubble is over other apps. Open the app you need, then tap the bubble."
+        }
+        _state.update {
+            it.copy(overlayMode = true, instruction = instruction, error = null)
+        }
+        CoachBus.publish(OverlaySessionState(active = true, instruction = instruction))
+    }
+
     private fun startTimeoutWatch() {
         timeoutJob?.cancel()
         tickerJob?.cancel()

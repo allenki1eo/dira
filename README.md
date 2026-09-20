@@ -4,7 +4,7 @@ Phone-first Android live screen guide (Kotlin + Jetpack Compose).
 
 Generic **Android UI coach** for arbitrary apps on a phone. No TRA / bank / PEPMIS / institution-specific playbooks.
 
-Package: `com.dira.app` · minSdk 29 (Android 10+) · version `0.5.1-restricted-settings`
+Package: `com.dira.app` · minSdk 29 (Android 10+) · version `0.5.2-show-bubble`
 
 ## Phase status
 
@@ -62,6 +62,8 @@ That dialog is **Android Restricted settings** (Android 13+, tighter on 15+), no
 4. Return to **Display over other apps** and enable Dira, then tap Help again.
 
 Until that toggle is on, Dira can still run the in-app tap map (Continue without the bubble).
+
+If **Display over other apps** is already on but you still see the in-app “Tap target on your screen” map: that session started *before* overlay was allowed, so no bubble was created. **Stop watching**, then **Help** again — or on 0.5.2+ tap **Show the D bubble**. Dira goes to the background; look for a teal **D** on the right of the home screen, then open Instagram and tap it.
 
 ### Bake `GUIDE_API_BASE` into a local APK
 

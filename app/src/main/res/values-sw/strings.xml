@@ -30,4 +30,5 @@
     <string name="overlay_voice_unavailable">Utambuzi wa sauti haupatikani. Andika badala yake.</string>
     <string name="overlay_voice_failed">Sikusikia. Jaribu tena au andika.</string>
     <string name="overlay_hear_again">Sikiliza tena</string>
+    <string name="overlay_bubble_shown">Tafuta D ya teal kulia. Fungua Instagram (au programu yoyote) kisha ibonyeze.</string>
 </resources>

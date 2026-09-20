@@ -39,6 +39,7 @@ fun GuideScreen(
     onStop: () -> Unit,
     onAskGuide: () -> Unit,
     onQuestionChange: (String) -> Unit,
+    onShowBubble: (() -> Unit)? = null,
 ) {
     val c = copy(useSwahili)
     val minutes = (state.remainingMs / 60_000L).toInt()
@@ -81,6 +82,17 @@ fun GuideScreen(
                 ),
             ) {
                 Text(c.stop)
+            }
+        }
+
+        if (onShowBubble != null) {
+            Button(
+                onClick = onShowBubble,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                Text(c.showBubble)
             }
         }
 

@@ -24,6 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dira.app.capture.ScreenCaptureService
 import com.dira.app.session.GuideSessionViewModel
@@ -41,6 +43,9 @@ class MainActivity : ComponentActivity() {
                     val sessionState by vm.state.collectAsState()
                     var pendingLanguageSw by remember { mutableStateOf(false) }
                     var overlayRestricted by remember { mutableStateOf(false) }
+                    var overlayGranted by remember {
+                        mutableStateOf(Settings.canDrawOverlays(this@MainActivity))
+                    }
 
                     val projectionLauncher = rememberLauncherForActivityResult(
                         ActivityResultContracts.StartActivityForResult(),
@@ -114,6 +119,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         if (Settings.canDrawOverlays(this@MainActivity)) {
                             overlayRestricted = false
+                            overlayGranted = true
                             continueAfterOverlay()
                         } else {
                             // Sideloaded apps hit Android Restricted settings / Enhanced
@@ -145,6 +151,24 @@ class MainActivity : ComponentActivity() {
                         afterMic()
                     }
 
+                    fun tryShowBubble() {
+                        if (!sessionState.watching || sessionState.overlayMode) return
+                        if (!Settings.canDrawOverlays(this@MainActivity)) return
+                        if (!ScreenCaptureService.isRunning) return
+                        ScreenCaptureService.enableOverlay(
+                            this@MainActivity,
+                            pendingLanguageSw,
+                            sessionState.guideApiBase,
+                        )
+                        vm.promoteToOverlay(pendingLanguageSw)
+                        moveTaskToBack(true)
+                    }
+
+                    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+                        overlayGranted = Settings.canDrawOverlays(this@MainActivity)
+                        tryShowBubble()
+                    }
+
                     DiraApp(
                         sessionState = sessionState,
                         onHelp = { useSwahili -> onHelpRequested(useSwahili) },
@@ -166,6 +190,8 @@ class MainActivity : ComponentActivity() {
                             overlayRestricted = false
                             continueAfterOverlay()
                         },
+                        overlayPermissionGranted = overlayGranted,
+                        onShowBubble = { tryShowBubble() },
                     )
                 }
             }

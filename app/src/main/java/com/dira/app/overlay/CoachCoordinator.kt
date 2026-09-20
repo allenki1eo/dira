@@ -58,20 +58,18 @@ class CoachCoordinator(
 
     fun start() {
         overlay.attach()
+        overlay.showAsk(true)
         initTts()
-        CoachBus.publish(
-            OverlaySessionState(
-                active = true,
-                instruction = context.getString(
-                    if (useSwahili) com.dira.app.R.string.overlay_ready_sw else com.dira.app.R.string.overlay_ready,
-                ),
-            ),
+        val ready = context.getString(
+            if (useSwahili) com.dira.app.R.string.overlay_ready_sw else com.dira.app.R.string.overlay_ready,
         )
-        overlay.setInstruction(
-            context.getString(
-                if (useSwahili) com.dira.app.R.string.overlay_ready_sw else com.dira.app.R.string.overlay_ready,
-            ),
-        )
+        CoachBus.publish(OverlaySessionState(active = true, instruction = ready))
+        overlay.setInstruction(ready)
+        Toast.makeText(
+            context,
+            context.getString(com.dira.app.R.string.overlay_bubble_shown),
+            Toast.LENGTH_LONG,
+        ).show()
         timeoutJob = scope.launch {
             delay(SESSION_MS)
             Toast.makeText(context, context.getString(com.dira.app.R.string.session_timed_out), Toast.LENGTH_LONG).show()

@@ -28,6 +28,8 @@ fun DiraApp(
     overlayRestricted: Boolean = false,
     onOpenAppInfo: () -> Unit = {},
     onContinueWithoutBubble: () -> Unit = {},
+    overlayPermissionGranted: Boolean = false,
+    onShowBubble: () -> Unit = {},
 ) {
     var route by remember { mutableStateOf(DiraRoute.Consent) }
     var useSwahili by remember { mutableStateOf(false) }
@@ -73,6 +75,7 @@ fun DiraApp(
             onStop = onStop,
             onAskGuide = { onAskGuide(useSwahili) },
             onQuestionChange = onQuestionChange,
+            onShowBubble = if (overlayPermissionGranted) onShowBubble else null,
         )
     }
 }

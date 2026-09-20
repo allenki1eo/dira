@@ -30,4 +30,5 @@
     <string name="overlay_voice_unavailable">Voice recognition isn\'t available on this device. Type instead.</string>
     <string name="overlay_voice_failed">Couldn\'t hear that. Try again or type.</string>
     <string name="overlay_hear_again">Hear again</string>
+    <string name="overlay_bubble_shown">Look for the teal D on the right. Open Instagram (or any app) and tap it.</string>
 </resources>
