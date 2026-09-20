@@ -25,6 +25,7 @@ import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import com.dira.app.MainActivity
 import com.dira.app.R
+import com.dira.app.overlay.CoachCoordinator
 
 /**
  * Foreground service required for MediaProjection on modern Android.
@@ -37,6 +38,7 @@ class ScreenCaptureService : Service() {
     private var imageReader: ImageReader? = null
     private var captureThread: HandlerThread? = null
     private var captureHandler: Handler? = null
+    private var coordinator: CoachCoordinator? = null
 
     private val projectionCallback = object : MediaProjection.Callback() {
         override fun onStop() {
@@ -69,6 +71,15 @@ class ScreenCaptureService : Service() {
                 }
                 startForegroundWithType()
                 beginProjection(code, data)
+                val overlay = intent?.getBooleanExtra(EXTRA_OVERLAY, false) == true
+                if (overlay) {
+                    coordinator?.destroy()
+                    coordinator = CoachCoordinator(
+                        this,
+                        useSwahili = intent?.getBooleanExtra(EXTRA_USE_SWAHILI, false) == true,
+                        guideBase = intent?.getStringExtra(EXTRA_GUIDE_BASE).orEmpty(),
+                    ).also { it.start() }
+                }
             }
         }
         return START_STICKY
@@ -206,6 +217,8 @@ class ScreenCaptureService : Service() {
         captureThread?.quitSafely()
         captureThread = null
         captureHandler = null
+        coordinator?.destroy()
+        coordinator = null
         if (clearBuffer) {
             SessionFrameBuffer.shared.clear()
         }
@@ -234,6 +247,9 @@ class ScreenCaptureService : Service() {
         const val ACTION_STOP = "com.dira.app.capture.STOP"
         const val EXTRA_RESULT_CODE = "resultCode"
         const val EXTRA_RESULT_DATA = "resultData"
+        const val EXTRA_OVERLAY = "overlay"
+        const val EXTRA_USE_SWAHILI = "useSwahili"
+        const val EXTRA_GUIDE_BASE = "guideBase"
         private const val CHANNEL_ID = "dira_capture"
         private const val NOTIFICATION_ID = 42
 
@@ -241,12 +257,22 @@ class ScreenCaptureService : Service() {
         var isRunning: Boolean = false
             private set
 
-        fun start(context: Context, resultCode: Int, data: Intent) {
+        fun start(
+            context: Context,
+            resultCode: Int,
+            data: Intent,
+            overlay: Boolean = false,
+            useSwahili: Boolean = false,
+            guideBase: String = "",
+        ) {
             MediaProjectionHolder.set(resultCode, data)
             val intent = Intent(context, ScreenCaptureService::class.java).apply {
                 action = ACTION_START
                 putExtra(EXTRA_RESULT_CODE, resultCode)
                 putExtra(EXTRA_RESULT_DATA, data)
+                putExtra(EXTRA_OVERLAY, overlay)
+                putExtra(EXTRA_USE_SWAHILI, useSwahili)
+                putExtra(EXTRA_GUIDE_BASE, guideBase)
             }
             context.startForegroundService(intent)
         }

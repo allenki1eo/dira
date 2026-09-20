@@ -1,16 +1,18 @@
 package com.dira.app.guide
 
 /**
- * Minimal guide request/response — ready for FastAPI/Node later.
- * Point targets are normalized fractions [0,1] of the overlay area.
+ * Guide request/response. Point targets are normalized fractions [0,1]
+ * of the full screen (overlay / MediaProjection).
  */
 data class GuideRequest(
     val question: String,
     val moduleId: String,
     val language: String,
-    /** Optional JPEG/PNG bytes of sanitized crop — omitted in pure mock heuristics. */
+    /** Optional JPEG bytes of the current frame — omitted in pure mock heuristics. */
     val imageJpeg: ByteArray? = null,
     val sanitizeNote: String? = null,
+    /** Optional accessibility node dump (read-only tree, not auto-tap). */
+    val uiTree: String? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -19,6 +21,7 @@ data class GuideRequest(
             moduleId == other.moduleId &&
             language == other.language &&
             sanitizeNote == other.sanitizeNote &&
+            uiTree == other.uiTree &&
             (imageJpeg.contentEquals(other.imageJpeg))
     }
 
@@ -27,6 +30,7 @@ data class GuideRequest(
         result = 31 * result + moduleId.hashCode()
         result = 31 * result + language.hashCode()
         result = 31 * result + (sanitizeNote?.hashCode() ?: 0)
+        result = 31 * result + (uiTree?.hashCode() ?: 0)
         result = 31 * result + (imageJpeg?.contentHashCode() ?: 0)
         return result
     }

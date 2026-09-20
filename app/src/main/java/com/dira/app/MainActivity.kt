@@ -3,10 +3,13 @@ package com.dira.app
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -42,12 +45,22 @@ class MainActivity : ComponentActivity() {
                         ActivityResultContracts.StartActivityForResult(),
                     ) { result ->
                         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+                            val overlay = Settings.canDrawOverlays(this@MainActivity)
                             ScreenCaptureService.start(
                                 this@MainActivity,
                                 result.resultCode,
                                 result.data!!,
+                                overlay = overlay,
+                                useSwahili = pendingLanguageSw,
+                                guideBase = sessionState.guideApiBase,
                             )
-                            vm.onCaptureStarted(useSwahili = pendingLanguageSw)
+                            vm.onCaptureStarted(
+                                useSwahili = pendingLanguageSw,
+                                overlayMode = overlay,
+                            )
+                            if (overlay) {
+                                moveTaskToBack(true)
+                            }
                         }
                     }
 
@@ -60,12 +73,10 @@ class MainActivity : ComponentActivity() {
                     val notificationPermissionLauncher = rememberLauncherForActivityResult(
                         ActivityResultContracts.RequestPermission(),
                     ) {
-                        // Continue regardless — denial only hides the FGS notification chrome.
                         launchProjection()
                     }
 
-                    fun onHelpRequested(useSwahili: Boolean) {
-                        pendingLanguageSw = useSwahili
+                    fun afterMic() {
                         if (Build.VERSION.SDK_INT >= 33) {
                             val granted = ContextCompat.checkSelfPermission(
                                 this@MainActivity,
@@ -79,6 +90,48 @@ class MainActivity : ComponentActivity() {
                         launchProjection()
                     }
 
+                    val micLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.RequestPermission(),
+                    ) {
+                        afterMic()
+                    }
+
+                    val overlayLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.StartActivityForResult(),
+                    ) {
+                        if (ContextCompat.checkSelfPermission(
+                                this@MainActivity,
+                                Manifest.permission.RECORD_AUDIO,
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            micLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                        } else {
+                            afterMic()
+                        }
+                    }
+
+                    fun onHelpRequested(useSwahili: Boolean) {
+                        pendingLanguageSw = useSwahili
+                        if (!Settings.canDrawOverlays(this@MainActivity)) {
+                            overlayLauncher.launch(
+                                Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:$packageName"),
+                                ),
+                            )
+                            return
+                        }
+                        if (ContextCompat.checkSelfPermission(
+                                this@MainActivity,
+                                Manifest.permission.RECORD_AUDIO,
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            micLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                            return
+                        }
+                        afterMic()
+                    }
+
                     DiraApp(
                         sessionState = sessionState,
                         onHelp = { useSwahili -> onHelpRequested(useSwahili) },
@@ -87,6 +140,9 @@ class MainActivity : ComponentActivity() {
                         onQuestionChange = vm::onQuestionChange,
                         onGuideBaseChange = vm::updateGuideBase,
                         onDismissCleared = vm::consumeClearedFlag,
+                        onEnableUiTree = {
+                            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                        },
                     )
                 }
             }

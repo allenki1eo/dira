@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.dira.app.a11y.DiraTreeService
 import com.dira.app.session.GuideUiState
 import com.dira.app.ui.screens.ConsentScreen
 import com.dira.app.ui.screens.GuideScreen
@@ -14,8 +15,7 @@ import com.dira.app.ui.screens.HomeScreen
 enum class DiraRoute { Consent, Home, Guide }
 
 /**
- * Consent → Home → (MediaProjection permission) → Guide
- * Overlay driven by guide targets; Stop / timeout clears session buffer.
+ * Consent → Home → overlay bubble (preferred) or in-app Guide fallback.
  */
 @Composable
 fun DiraApp(
@@ -26,15 +26,17 @@ fun DiraApp(
     onQuestionChange: (String) -> Unit,
     onGuideBaseChange: (String) -> Unit,
     onDismissCleared: () -> Unit,
+    onEnableUiTree: () -> Unit,
 ) {
     var route by remember { mutableStateOf(DiraRoute.Consent) }
     var useSwahili by remember { mutableStateOf(false) }
 
-    LaunchedEffect(sessionState.watching) {
-        if (sessionState.watching) {
-            route = DiraRoute.Guide
-        } else if (route == DiraRoute.Guide) {
-            route = DiraRoute.Home
+    LaunchedEffect(sessionState.watching, sessionState.overlayMode) {
+        route = when {
+            sessionState.watching && !sessionState.overlayMode -> DiraRoute.Guide
+            sessionState.watching && sessionState.overlayMode -> DiraRoute.Home
+            route == DiraRoute.Guide -> DiraRoute.Home
+            else -> route
         }
     }
 
@@ -53,6 +55,10 @@ fun DiraApp(
             onHelp = { onHelp(useSwahili) },
             guideApiBase = sessionState.guideApiBase,
             onGuideBaseChange = onGuideBaseChange,
+            overlayActive = sessionState.watching && sessionState.overlayMode,
+            onStopOverlay = onStop,
+            uiTreeEnabled = DiraTreeService.isEnabled(),
+            onEnableUiTree = onEnableUiTree,
             guideModeLabel = if (sessionState.guideSource == "mock") {
                 if (useSwahili) "Hali ya onyesho (bila seva)" else "Mock guide (no backend)"
             } else {

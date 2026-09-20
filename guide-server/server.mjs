@@ -37,6 +37,7 @@ Rules:
 - Generic Android UI only. Never give TRA, bank, PEPMIS, tax office, payroll, or other institution-specific playbooks or form-filling scripts.
 - Describe the next single tap or gesture visible on THIS screen.
 - pointX and pointY are normalized fractions 0–1 of this screenshot (origin at top-left: x is left→right, y is top→bottom). Point at the control the user should use next.
+- If a UI tree dump is provided (interactive nodes with x/y), prefer the center of the matching node for pointX/pointY.
 - If the task already looks complete, set done=true and point at Back/Home/close if visible.
 - If you cannot see a relevant control, say so briefly and point at the most likely next control.
 - Do not ask for passwords, OTPs, PINs, or account numbers.
@@ -74,11 +75,15 @@ function buildUserPrompt(body) {
   const question = String(body.question || "").trim() || "(no question — suggest the most likely next tap)";
   const language = String(body.language || "en");
   const note = body.sanitizeNote ? `Sanitize note from the phone: ${body.sanitizeNote}` : "";
+  const tree = body.uiTree
+    ? `Foreground app UI tree (read-only accessibility dump; x/y are 0–1 centers):\n${String(body.uiTree).slice(0, 5000)}`
+    : "";
   return [
     `User language: ${language}`,
     `User question: ${question}`,
     note,
-    "Screenshot is attached when present. Coordinates must match that image.",
+    tree,
+    "Screenshot is attached when present. Coordinates must match that image (and the UI tree when present).",
   ]
     .filter(Boolean)
     .join("\n");

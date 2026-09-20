@@ -12,8 +12,8 @@ android {
         applicationId = "com.dira.app"
         minSdk = 29
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.3.0-openrouter-trial"
+        versionCode = 4
+        versionName = "0.4.0-overlay-bubble"
 
         // Real guide when GUIDE_API_BASE is non-empty (unless USE_MOCK_GUIDE=true).
         // Also overridable at runtime on the Home screen for sideloaded trial APKs.

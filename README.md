@@ -4,7 +4,7 @@ Phone-first Android live screen guide (Kotlin + Jetpack Compose).
 
 Generic **Android UI coach** for arbitrary apps on a phone. No TRA / bank / PEPMIS / institution-specific playbooks.
 
-Package: `com.dira.app` · minSdk 29 (Android 10+) · version `0.3.0-openrouter-trial`
+Package: `com.dira.app` · minSdk 29 (Android 10+) · version `0.4.0-overlay-bubble`
 
 ## Phase status
 
@@ -13,7 +13,8 @@ Package: `com.dira.app` · minSdk 29 (Android 10+) · version `0.3.0-openrouter-
 | 0 Blueprint | Done (docs in tanzania-guide) |
 | 1 Skeleton | Done — Consent → Home → Guide, Watching/Stop, pointer |
 | 2 Live loop | Done — MediaProjection, in-memory frames, mock/API client, overlay, 5‑min timeout |
-| **OpenRouter trial** | **This tree** — `guide-server/` vision proxy + debug APK workflow |
+| OpenRouter trial | Done — `guide-server/` vision proxy + debug APK workflow |
+| **Overlay bubble** | **This tree** — draw-over-apps bubble, voice/type, pointer on the real app, optional UI tree |
 | Institution modules | Out of scope — do not add TRA/bank/PEPMIS scripts |
 
 ## Phone trial (sideload)
@@ -41,7 +42,15 @@ node server.mjs
 
    Leave the field blank to use the **mock** fallback (no network).
 
-4. Consent → **Help me on this screen** → allow screen capture → switch to **any** app → return to Dira (or keep the overlay in mind) → type what you want → **Guide step**. Stop watching wipes the in-memory frame.
+If the phone shows **Cloudflare 502**, the tunnel in front of `guide-server/` is down or overloaded — not an APK bug. Wait ~60s, restart the tunnel, tap the bubble again. Dira retries 502s once and shows a short message instead of the raw JSON.
+
+### Overlay bubble (draw over other apps)
+
+4. Consent → **Help me on this screen** → allow **Display over other apps** → optional mic → screen capture → Dira sends you back to the home screen with a **D bubble**. Open Gmail (or any app) → tap the bubble → type or **Voice** → **Guide step**. A pointer is drawn on that app. Stop watching wipes the in-memory frame.
+
+If overlay permission is denied, Dira falls back to the in-app guide screen.
+
+Optional: **Enable UI tree** on Home (Accessibility). Dira reads on-screen controls to aim the pointer. It does **not** tap for you.
 
 ### Bake `GUIDE_API_BASE` into a local APK
 
@@ -71,11 +80,13 @@ The model is prompted as a **generic Android UI coach**: one next tap, both EN/S
 
 ## Privacy
 
-- Capture is user-triggered only (Help + system dialog)
+- Capture is user-triggered only (Help + system dialogs)
 - Frames: memory only — downscaled for the in-flight POST, then dropped
-- Guide-server does **not** write screenshots to disk and does not log `imageBase64`
+- Overlay HUD is not stored; it is torn down on Stop / timeout
+- Optional Accessibility is **read-only** (UI tree dump for aiming). Dira does not perform taps.
+- Guide-server does **not** write screenshots to disk and does not log `imageBase64` or `uiTree`
 - 5‑minute session timeout → same wipe as Stop
-- No Accessibility, contacts, SMS, or storage permissions
+- No contacts, SMS, or storage permissions
 - Debug APK may use HTTP to a LAN server; release builds keep `usesCleartextTraffic=false`
 
 ## GitHub Actions debug APK
@@ -96,8 +107,10 @@ Optional repo secret `GUIDE_API_BASE` bakes a public HTTPS origin into CI APKs. 
 guide-server/          Node OpenRouter proxy (POST /v1/guide)
 app/src/main/java/com/dira/app/
   capture/             SessionFrameBuffer, SanitizeStub, ScreenCaptureService
+  overlay/             Bubble + pointer HUD over other apps
+  a11y/                Read-only UI tree (optional Accessibility)
   guide/               GuideApiClient, MockGuideClient, HttpGuideClient
   session/             GuideSessionViewModel (timeout + wipe)
   modules/             generic Android pack
-  ui/                  Consent, Home, Guide, pointer overlay
+  ui/                  Consent, Home, Guide fallback
 ```
