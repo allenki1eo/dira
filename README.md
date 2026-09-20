@@ -50,7 +50,7 @@ If the phone shows **Cloudflare 502**, the tunnel in front of `guide-server/` is
 
 If overlay permission is denied, Dira falls back to the in-app guide screen.
 
-Optional: **Enable UI tree** on Home (Accessibility). Dira reads on-screen controls to aim the pointer. It does **not** tap for you.
+The trial APK does **not** register an Accessibility service. Play Protect often **hard-blocks** sideloaded apps that combine overlay + Accessibility + screen capture (it looks like banking malware). Guidance still uses the live screenshot.
 
 ### Bake `GUIDE_API_BASE` into a local APK
 
@@ -83,7 +83,7 @@ The model is prompted as a **generic Android UI coach**: one next tap, both EN/S
 - Capture is user-triggered only (Help + system dialogs)
 - Frames: memory only — downscaled for the in-flight POST, then dropped
 - Overlay HUD is not stored; it is torn down on Stop / timeout
-- Optional Accessibility is **read-only** (UI tree dump for aiming). Dira does not perform taps.
+- The sideload trial APK does **not** include Accessibility (Play Protect blocks that combo)
 - Guide-server does **not** write screenshots to disk and does not log `imageBase64` or `uiTree`
 - 5‑minute session timeout → same wipe as Stop
 - No contacts, SMS, or storage permissions

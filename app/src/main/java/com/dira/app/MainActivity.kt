@@ -140,9 +140,6 @@ class MainActivity : ComponentActivity() {
                         onQuestionChange = vm::onQuestionChange,
                         onGuideBaseChange = vm::updateGuideBase,
                         onDismissCleared = vm::consumeClearedFlag,
-                        onEnableUiTree = {
-                            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                        },
                     )
                 }
             }

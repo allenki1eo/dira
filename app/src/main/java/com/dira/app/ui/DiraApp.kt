@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.dira.app.a11y.DiraTreeService
 import com.dira.app.session.GuideUiState
 import com.dira.app.ui.screens.ConsentScreen
 import com.dira.app.ui.screens.GuideScreen
@@ -26,7 +25,6 @@ fun DiraApp(
     onQuestionChange: (String) -> Unit,
     onGuideBaseChange: (String) -> Unit,
     onDismissCleared: () -> Unit,
-    onEnableUiTree: () -> Unit,
 ) {
     var route by remember { mutableStateOf(DiraRoute.Consent) }
     var useSwahili by remember { mutableStateOf(false) }
@@ -57,8 +55,6 @@ fun DiraApp(
             onGuideBaseChange = onGuideBaseChange,
             overlayActive = sessionState.watching && sessionState.overlayMode,
             onStopOverlay = onStop,
-            uiTreeEnabled = DiraTreeService.isEnabled(),
-            onEnableUiTree = onEnableUiTree,
             guideModeLabel = if (sessionState.guideSource == "mock") {
                 if (useSwahili) "Hali ya onyesho (bila seva)" else "Mock guide (no backend)"
             } else {

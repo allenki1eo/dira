@@ -34,8 +34,6 @@ fun HomeScreen(
     onGuideBaseChange: (String) -> Unit = {},
     overlayActive: Boolean = false,
     onStopOverlay: () -> Unit = {},
-    uiTreeEnabled: Boolean = false,
-    onEnableUiTree: () -> Unit = {},
 ) {
     val c = copy(useSwahili)
     Column(
@@ -102,16 +100,6 @@ fun HomeScreen(
                         Text(c.stop)
                     }
                 }
-            }
-        }
-        Text(
-            if (uiTreeEnabled) c.uiTreeOn else c.uiTreeOff,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.secondary,
-        )
-        if (!uiTreeEnabled) {
-            Button(onClick = onEnableUiTree, modifier = Modifier.fillMaxWidth()) {
-                Text(c.uiTreeButton)
             }
         }
         Spacer(modifier = Modifier.height(24.dp))

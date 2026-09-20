@@ -23,9 +23,6 @@ data class DiraCopy(
     val tapMapLabel: String,
     val overlayActive: String,
     val overlayHelp: String,
-    val uiTreeOff: String,
-    val uiTreeOn: String,
-    val uiTreeButton: String,
 )
 
 fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
@@ -33,8 +30,7 @@ fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     consentBody = "Dira ni msaidizi wa muda wa UI wa Android, siyo kinasa skrini.\n\n" +
         "Ukibonyeza Saidia, tunaomba: (1) kuchora juu ya programu zingine — kiputo na kielekezi; " +
         "(2) kushiriki skrini kwa fremu za muda; (3) maikrofoni kwa sauti, hiari. " +
-        "Unaweza pia kuwasha huduma ya Ufikiaji ili Dira isome kidhibiti kilicho wazi — " +
-        "haitabonyeza kwa niaba yako. Fremu zinakaa kwenye kumbukumbu. Acha wakati wowote; kikao kinaisha baada ya dakika 5.",
+        "Fremu zinakaa kwenye kumbukumbu. Acha wakati wowote; kikao kinaisha baada ya dakika 5.",
     consentAccept = "Nimeelewa — endelea",
     homeTitle = "Dira",
     homeTagline = "Dira yako unapokwama kwenye programu yoyote",
@@ -54,15 +50,11 @@ fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     tapMapLabel = "Sehemu ya kubonyeza kwenye skrini yako",
     overlayActive = "Kiputo kiko hai. Fungua programu unayotaka, kisha bonyeza kiputo cha D.",
     overlayHelp = "Tutachora kiputo juu ya programu zingine. Bonyeza ili kuandika au kushiriki sauti — kisha kielekezi kitaonyesha mahali pa kubonyeza.",
-    uiTreeOff = "Mti wa UI (Ufikiaji) umezimwa — mwongozo unategemea skrini pekee.",
-    uiTreeOn = "Mti wa UI uko hai — Dira inaona vidhibiti vya programu iliyo wazi (bila kubonyeza).",
-    uiTreeButton = "Washa mti wa UI (hiari)",
 ) else DiraCopy(
     consentTitle = "Before Dira can help",
     consentBody = "Dira is a temporary Android UI helper, not a recorder.\n\n" +
         "When you tap Help we ask to: (1) draw over other apps — a bubble and a pointer; " +
         "(2) capture the screen for short-lived frames; (3) use the mic for voice, optional. " +
-        "You can also turn on Accessibility so Dira can read on-screen controls — it will not tap for you. " +
         "Frames stay in memory. Stop anytime; sessions also end after 5 minutes.",
     consentAccept = "I understand — continue",
     homeTitle = "Dira",
@@ -83,7 +75,4 @@ fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     tapMapLabel = "Tap target on your screen",
     overlayActive = "The bubble is live. Open the app you need, then tap the D bubble.",
     overlayHelp = "We'll draw a bubble over other apps. Tap it to type or send a voice note — then a pointer shows where to tap.",
-    uiTreeOff = "UI tree (Accessibility) is off — guidance uses the screenshot only.",
-    uiTreeOn = "UI tree is on — Dira can see controls in the app you're using (it still won't tap for you).",
-    uiTreeButton = "Enable UI tree (optional)",
 )

@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Dira</string>
     <string name="consent_title">Kabla Dira iweze kukusaidia</string>
-    <string name="consent_body">Dira ni msaidizi wa muda wa UI wa Android, siyo kinasa skrini.\n\nUkibonyeza Saidia tunaomba kuchora juu ya programu zingine, kushiriki skrini kwa muda, na maikrofoni hiari. Ufikiaji ni hiari na wa kusoma tu.</string>
+    <string name="consent_body">Dira ni msaidizi wa muda wa UI wa Android, siyo kinasa skrini.\n\nUkibonyeza Saidia tunaomba kuchora juu ya programu zingine, kushiriki skrini kwa muda, na maikrofoni hiari.</string>
     <string name="consent_accept">Nimeelewa — endelea</string>
     <string name="home_title">Dira</string>
     <string name="home_tagline">Dira yako unapokwama kwenye programu yoyote</string>

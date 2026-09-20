@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Dira</string>
     <string name="consent_title">Before Dira can help</string>
-    <string name="consent_body">Dira is a temporary Android UI helper, not a recorder.\n\nWhen you tap Help we ask to draw over other apps, capture the screen briefly, and optionally use the mic. Accessibility is optional and read-only.</string>
+    <string name="consent_body">Dira is a temporary Android UI helper, not a recorder.\n\nWhen you tap Help we ask to draw over other apps, capture the screen briefly, and optionally use the mic.</string>
     <string name="consent_accept">I understand — continue</string>
     <string name="home_title">Dira</string>
     <string name="home_tagline">Your compass when any app gets stuck</string>
