@@ -38,6 +38,9 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # Avoid obsolete `tools` package (sdkmanager fails: Failed to find package 'tools')
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
 
       - name: Write local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
