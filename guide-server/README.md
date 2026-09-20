@@ -17,7 +17,9 @@ node server.mjs
 Listens on `http://0.0.0.0:8787` by default (`PORT`, `HOST` override).
 
 - `GET /health` — liveness; does not echo secrets
-- `POST /v1/guide` — `{ question, moduleId, language, imageBase64?, sanitizeNote? }` → `{ instructionEn, instructionSw, pointX, pointY, done }`
+- `POST /v1/guide` — `{ question, moduleId, language, imageBase64?, sanitizeNote? }` → `{ instructionEn, instructionSw, spokenEn, spokenSw, appGuess, targetLabel, pointX, pointY, boxX, boxY, boxW, boxH, confidence, done }`
+
+`pointX`/`pointY` are the tap center (0–1). `box*` is a tight highlight around the same control. Restart this process after prompt changes so the phone trial picks them up.
 
 Frames are held only for the in-flight request. They are not logged or written to disk.
 

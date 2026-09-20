@@ -3,10 +3,13 @@ package com.dira.app
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -21,6 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dira.app.capture.ScreenCaptureService
 import com.dira.app.session.GuideSessionViewModel
@@ -37,17 +42,31 @@ class MainActivity : ComponentActivity() {
                     val vm: GuideSessionViewModel = viewModel()
                     val sessionState by vm.state.collectAsState()
                     var pendingLanguageSw by remember { mutableStateOf(false) }
+                    var overlayRestricted by remember { mutableStateOf(false) }
+                    var overlayGranted by remember {
+                        mutableStateOf(Settings.canDrawOverlays(this@MainActivity))
+                    }
 
                     val projectionLauncher = rememberLauncherForActivityResult(
                         ActivityResultContracts.StartActivityForResult(),
                     ) { result ->
                         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+                            val overlay = Settings.canDrawOverlays(this@MainActivity)
                             ScreenCaptureService.start(
                                 this@MainActivity,
                                 result.resultCode,
                                 result.data!!,
+                                overlay = overlay,
+                                useSwahili = pendingLanguageSw,
+                                guideBase = sessionState.guideApiBase,
                             )
-                            vm.onCaptureStarted(useSwahili = pendingLanguageSw)
+                            vm.onCaptureStarted(
+                                useSwahili = pendingLanguageSw,
+                                overlayMode = overlay,
+                            )
+                            if (overlay) {
+                                moveTaskToBack(true)
+                            }
                         }
                     }
 
@@ -60,12 +79,10 @@ class MainActivity : ComponentActivity() {
                     val notificationPermissionLauncher = rememberLauncherForActivityResult(
                         ActivityResultContracts.RequestPermission(),
                     ) {
-                        // Continue regardless — denial only hides the FGS notification chrome.
                         launchProjection()
                     }
 
-                    fun onHelpRequested(useSwahili: Boolean) {
-                        pendingLanguageSw = useSwahili
+                    fun afterMic() {
                         if (Build.VERSION.SDK_INT >= 33) {
                             val granted = ContextCompat.checkSelfPermission(
                                 this@MainActivity,
@@ -79,6 +96,79 @@ class MainActivity : ComponentActivity() {
                         launchProjection()
                     }
 
+                    val micLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.RequestPermission(),
+                    ) {
+                        afterMic()
+                    }
+
+                    fun continueAfterOverlay() {
+                        if (ContextCompat.checkSelfPermission(
+                                this@MainActivity,
+                                Manifest.permission.RECORD_AUDIO,
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            micLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                        } else {
+                            afterMic()
+                        }
+                    }
+
+                    val overlayLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.StartActivityForResult(),
+                    ) {
+                        if (Settings.canDrawOverlays(this@MainActivity)) {
+                            overlayRestricted = false
+                            overlayGranted = true
+                            continueAfterOverlay()
+                        } else {
+                            // Sideloaded apps hit Android Restricted settings / Enhanced
+                            // Confirmation — "App was denied access" — not a Dira crash.
+                            overlayRestricted = true
+                        }
+                    }
+
+                    fun onHelpRequested(useSwahili: Boolean) {
+                        pendingLanguageSw = useSwahili
+                        if (!Settings.canDrawOverlays(this@MainActivity)) {
+                            overlayLauncher.launch(
+                                Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:$packageName"),
+                                ),
+                            )
+                            return
+                        }
+                        overlayRestricted = false
+                        if (ContextCompat.checkSelfPermission(
+                                this@MainActivity,
+                                Manifest.permission.RECORD_AUDIO,
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            micLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                            return
+                        }
+                        afterMic()
+                    }
+
+                    fun tryShowBubble() {
+                        if (!sessionState.watching || sessionState.overlayMode) return
+                        if (!Settings.canDrawOverlays(this@MainActivity)) return
+                        if (!ScreenCaptureService.isRunning) return
+                        ScreenCaptureService.enableOverlay(
+                            this@MainActivity,
+                            pendingLanguageSw,
+                            sessionState.guideApiBase,
+                        )
+                        vm.promoteToOverlay(pendingLanguageSw)
+                        moveTaskToBack(true)
+                    }
+
+                    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+                        overlayGranted = Settings.canDrawOverlays(this@MainActivity)
+                        tryShowBubble()
+                    }
+
                     DiraApp(
                         sessionState = sessionState,
                         onHelp = { useSwahili -> onHelpRequested(useSwahili) },
@@ -87,6 +177,21 @@ class MainActivity : ComponentActivity() {
                         onQuestionChange = vm::onQuestionChange,
                         onGuideBaseChange = vm::updateGuideBase,
                         onDismissCleared = vm::consumeClearedFlag,
+                        overlayRestricted = overlayRestricted,
+                        onOpenAppInfo = {
+                            startActivity(
+                                Intent(
+                                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                    Uri.parse("package:$packageName"),
+                                ),
+                            )
+                        },
+                        onContinueWithoutBubble = {
+                            overlayRestricted = false
+                            continueAfterOverlay()
+                        },
+                        overlayPermissionGranted = overlayGranted,
+                        onShowBubble = { tryShowBubble() },
                     )
                 }
             }

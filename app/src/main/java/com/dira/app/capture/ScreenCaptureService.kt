@@ -21,10 +21,12 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.util.DisplayMetrics
+import android.provider.Settings
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import com.dira.app.MainActivity
 import com.dira.app.R
+import com.dira.app.overlay.CoachCoordinator
 
 /**
  * Foreground service required for MediaProjection on modern Android.
@@ -37,6 +39,9 @@ class ScreenCaptureService : Service() {
     private var imageReader: ImageReader? = null
     private var captureThread: HandlerThread? = null
     private var captureHandler: Handler? = null
+    private var coordinator: CoachCoordinator? = null
+    private var savedUseSwahili = false
+    private var savedGuideBase = ""
 
     private val projectionCallback = object : MediaProjection.Callback() {
         override fun onStop() {
@@ -52,6 +57,12 @@ class ScreenCaptureService : Service() {
             ACTION_STOP -> {
                 stopCaptureAndSelf()
                 return START_NOT_STICKY
+            }
+            ACTION_ENABLE_OVERLAY -> {
+                savedUseSwahili = intent.getBooleanExtra(EXTRA_USE_SWAHILI, savedUseSwahili)
+                savedGuideBase = intent.getStringExtra(EXTRA_GUIDE_BASE) ?: savedGuideBase
+                attachOverlayIfAllowed()
+                return START_STICKY
             }
             ACTION_START, null -> {
                 val code = intent?.getIntExtra(EXTRA_RESULT_CODE, MediaProjectionHolder.resultCode)
@@ -69,9 +80,24 @@ class ScreenCaptureService : Service() {
                 }
                 startForegroundWithType()
                 beginProjection(code, data)
+                savedUseSwahili = intent?.getBooleanExtra(EXTRA_USE_SWAHILI, false) == true
+                savedGuideBase = intent?.getStringExtra(EXTRA_GUIDE_BASE).orEmpty()
+                // OS permission is the source of truth — not the extra from when Help was tapped.
+                attachOverlayIfAllowed()
             }
         }
         return START_STICKY
+    }
+
+    private fun attachOverlayIfAllowed() {
+        if (!Settings.canDrawOverlays(this)) return
+        if (mediaProjection == null) return
+        if (coordinator != null) return
+        coordinator = CoachCoordinator(
+            this,
+            useSwahili = savedUseSwahili,
+            guideBase = savedGuideBase,
+        ).also { it.start() }
     }
 
     private fun startForegroundWithType() {
@@ -206,6 +232,8 @@ class ScreenCaptureService : Service() {
         captureThread?.quitSafely()
         captureThread = null
         captureHandler = null
+        coordinator?.destroy()
+        coordinator = null
         if (clearBuffer) {
             SessionFrameBuffer.shared.clear()
         }
@@ -232,8 +260,12 @@ class ScreenCaptureService : Service() {
     companion object {
         const val ACTION_START = "com.dira.app.capture.START"
         const val ACTION_STOP = "com.dira.app.capture.STOP"
+        const val ACTION_ENABLE_OVERLAY = "com.dira.app.capture.ENABLE_OVERLAY"
         const val EXTRA_RESULT_CODE = "resultCode"
         const val EXTRA_RESULT_DATA = "resultData"
+        const val EXTRA_OVERLAY = "overlay"
+        const val EXTRA_USE_SWAHILI = "useSwahili"
+        const val EXTRA_GUIDE_BASE = "guideBase"
         private const val CHANNEL_ID = "dira_capture"
         private const val NOTIFICATION_ID = 42
 
@@ -241,12 +273,22 @@ class ScreenCaptureService : Service() {
         var isRunning: Boolean = false
             private set
 
-        fun start(context: Context, resultCode: Int, data: Intent) {
+        fun start(
+            context: Context,
+            resultCode: Int,
+            data: Intent,
+            overlay: Boolean = false,
+            useSwahili: Boolean = false,
+            guideBase: String = "",
+        ) {
             MediaProjectionHolder.set(resultCode, data)
             val intent = Intent(context, ScreenCaptureService::class.java).apply {
                 action = ACTION_START
                 putExtra(EXTRA_RESULT_CODE, resultCode)
                 putExtra(EXTRA_RESULT_DATA, data)
+                putExtra(EXTRA_OVERLAY, overlay)
+                putExtra(EXTRA_USE_SWAHILI, useSwahili)
+                putExtra(EXTRA_GUIDE_BASE, guideBase)
             }
             context.startForegroundService(intent)
         }
@@ -254,6 +296,15 @@ class ScreenCaptureService : Service() {
         fun stop(context: Context) {
             val intent = Intent(context, ScreenCaptureService::class.java).apply {
                 action = ACTION_STOP
+            }
+            context.startService(intent)
+        }
+
+        fun enableOverlay(context: Context, useSwahili: Boolean, guideBase: String) {
+            val intent = Intent(context, ScreenCaptureService::class.java).apply {
+                action = ACTION_ENABLE_OVERLAY
+                putExtra(EXTRA_USE_SWAHILI, useSwahili)
+                putExtra(EXTRA_GUIDE_BASE, guideBase)
             }
             context.startService(intent)
         }

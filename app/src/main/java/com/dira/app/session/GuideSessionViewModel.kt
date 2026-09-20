@@ -12,9 +12,10 @@ import com.dira.app.capture.SessionFrameBuffer
 import com.dira.app.guide.GuideApiClient
 import com.dira.app.guide.GuideClientFactory
 import com.dira.app.guide.GuideRequest
-import com.dira.app.guide.GuideStep
 import com.dira.app.guide.MockGuideClient
 import com.dira.app.modules.DemoModulePack
+import com.dira.app.overlay.CoachBus
+import com.dira.app.overlay.OverlaySessionState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +38,12 @@ data class GuideUiState(
     val guideSource: String = "mock",
     val guideApiBase: String = "",
     val remainingMs: Long = SESSION_TIMEOUT_MS,
+    val overlayMode: Boolean = false,
+    val boxX: Float = Float.NaN,
+    val boxY: Float = Float.NaN,
+    val boxW: Float = Float.NaN,
+    val boxH: Float = Float.NaN,
+    val targetLabel: String = "",
 ) {
     companion object {
         const val SESSION_TIMEOUT_MS = 5 * 60 * 1000L
@@ -71,6 +78,34 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
             ),
         )
         state = _state.asStateFlow()
+        viewModelScope.launch {
+            var overlaySeenActive = false
+            CoachBus.state.collect { overlay ->
+                if (overlay.active) overlaySeenActive = true
+                if (overlaySeenActive && !overlay.active && _state.value.overlayMode && _state.value.watching) {
+                    overlaySeenActive = false
+                    timeoutJob?.cancel()
+                    tickerJob?.cancel()
+                    timeoutJob = null
+                    tickerJob = null
+                    _state.value = GuideUiState(
+                        watching = false,
+                        sessionCleared = true,
+                        overlayMode = false,
+                        guideSource = if (GuideClientFactory.isMockMode(_state.value.guideApiBase)) "mock" else "api",
+                        guideApiBase = _state.value.guideApiBase,
+                    )
+                } else if (_state.value.overlayMode && overlay.active) {
+                    _state.update {
+                        it.copy(
+                            loading = overlay.loading,
+                            instruction = overlay.instruction.ifBlank { it.instruction },
+                            error = overlay.error,
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun updateGuideBase(url: String) {
@@ -86,7 +121,7 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun onCaptureStarted(useSwahili: Boolean) {
+    fun onCaptureStarted(useSwahili: Boolean, overlayMode: Boolean = false) {
         (client as? MockGuideClient)?.reset()
         SessionFrameBuffer.shared.clear()
         sessionStartedAt = System.currentTimeMillis()
@@ -98,7 +133,14 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
                 error = null,
                 sessionCleared = false,
                 timedOut = false,
-                instruction = if (useSwahili) {
+                overlayMode = overlayMode,
+                instruction = if (overlayMode) {
+                    if (useSwahili) {
+                        "Kiputo cha Dira kiko juu ya programu zingine. Fungua programu, kisha bonyeza kiputo."
+                    } else {
+                        "The Dira bubble is over other apps. Open the app you need, then tap the bubble."
+                    }
+                } else if (useSwahili) {
                     if (mock) {
                         "Inatazama… uliza swali au bonyeza Pata hatua."
                     } else {
@@ -114,9 +156,16 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
                 remainingMs = GuideUiState.SESSION_TIMEOUT_MS,
             )
         }
+        if (overlayMode) {
+            CoachBus.publish(
+                OverlaySessionState(
+                    active = true,
+                    instruction = _state.value.instruction,
+                ),
+            )
+        }
         startTimeoutWatch()
-        // Auto first step is mock-only so we don't spend an API call on Dira's own UI.
-        if (mock) {
+        if (!overlayMode && mock) {
             viewModelScope.launch {
                 delay(600)
                 if (_state.value.watching) {
@@ -153,15 +202,22 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
                         language = if (useSwahili) "sw" else "en",
                         imageJpeg = jpeg,
                         sanitizeNote = sanitizeNote,
+                        uiTree = com.dira.app.a11y.DiraTreeService.dumpForegroundTree(),
                     ),
                 )
                 val step = response.step
+                val box = step.resolvedBox()
                 _state.update {
                     it.copy(
                         loading = false,
-                        instruction = stepText(step, useSwahili),
+                        instruction = step.chipText(useSwahili),
                         pointX = step.pointXFraction.coerceIn(0f, 1f),
                         pointY = step.pointYFraction.coerceIn(0f, 1f),
+                        boxX = box[0],
+                        boxY = box[1],
+                        boxW = box[2],
+                        boxH = box[3],
+                        targetLabel = step.targetLabel,
                         guideSource = response.source,
                     )
                 }
@@ -192,11 +248,26 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
             timedOut = _state.value.timedOut,
             guideSource = if (GuideClientFactory.isMockMode(base)) "mock" else "api",
             guideApiBase = base,
+            overlayMode = false,
         )
     }
 
     fun consumeClearedFlag() {
         _state.update { it.copy(sessionCleared = false, timedOut = false) }
+    }
+
+    /** Overlay permission arrived after an in-app session had already started. */
+    fun promoteToOverlay(useSwahili: Boolean) {
+        if (!_state.value.watching || _state.value.overlayMode) return
+        val instruction = if (useSwahili) {
+            "Kiputo cha Dira kiko juu ya programu zingine. Fungua programu, kisha bonyeza kiputo."
+        } else {
+            "The Dira bubble is over other apps. Open the app you need, then tap the bubble."
+        }
+        _state.update {
+            it.copy(overlayMode = true, instruction = instruction, error = null)
+        }
+        CoachBus.publish(OverlaySessionState(active = true, instruction = instruction))
     }
 
     private fun startTimeoutWatch() {
@@ -218,17 +289,14 @@ class GuideSessionViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun stepText(step: GuideStep, useSwahili: Boolean): String =
-        if (useSwahili) step.instructionSw else step.instructionEn
-
-    private fun bitmapToJpeg(bitmap: Bitmap, quality: Int = 70): ByteArray {
+    private fun bitmapToJpeg(bitmap: Bitmap, quality: Int = 82): ByteArray {
         val out = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, out)
         return out.toByteArray()
     }
 
     override fun onCleared() {
-        if (_state.value.watching) {
+        if (_state.value.watching && !_state.value.overlayMode) {
             ScreenCaptureService.stop(getApplication())
             SessionFrameBuffer.shared.clear()
         }

@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Dira</string>
     <string name="consent_title">Kabla Dira iweze kukusaidia</string>
-    <string name="consent_body">Dira ni msaidizi wa muda wa UI wa Android, siyo kinasa skrini.\n\nUkibonyeza Saidia, tunaomba ruhusa ya kuona skrini yako tu ili kuonyesha hatua inayofuata. Fremu zinakaa kwenye kumbukumbu — hazihifadhiwi. Unaweza kubonyeza Acha wakati wowote — kisha kikao kinafutwa. Kikao pia kitaisha baada ya dakika 5.</string>
+    <string name="consent_body">Dira ni msaidizi wa muda wa UI wa Android, siyo kinasa skrini.\n\nUkibonyeza Saidia tunaomba kuchora juu ya programu zingine, kushiriki skrini kwa muda, na maikrofoni hiari.</string>
     <string name="consent_accept">Nimeelewa — endelea</string>
     <string name="home_title">Dira</string>
     <string name="home_tagline">Dira yako unapokwama kwenye programu yoyote</string>
@@ -10,12 +10,25 @@
     <string name="watching">Inatazama…</string>
     <string name="stop">Acha kutazama</string>
     <string name="session_cleared">Kikao kimefutwa.</string>
+    <string name="session_timed_out">Muda wa kikao umeisha (dakika 5).</string>
     <string name="ask_hint">Uliza unachotaka kufanya…</string>
     <string name="fake_step">Ifuatayo: bonyeza kidhibiti kilichoonyeshwa</string>
     <string name="lang_sw">Kiswahili</string>
     <string name="lang_en">English</string>
     <string name="demo_module">Mwongozo wa UI wa Android (programu yoyote)</string>
     <string name="capture_channel_name">Mwongozo wa skrini</string>
-    <string name="capture_notification_body">Dira inatazama skrini hii kukuongoza. Bonyeza Acha katika programu kumaliza.</string>
+    <string name="capture_notification_body">Kiputo cha Dira kiko hai. Bonyeza Acha kwenye kiputo au hapa kumaliza.</string>
     <string name="guide_step">Pata hatua</string>
+    <string name="a11y_description">Dira inasoma vidhibiti vya skrini katika programu unayotumia ili kuonyesha mahali pa kubonyeza. Haibonyezi kwa niaba yako, wala haihifadhi mti.</string>
+    <string name="overlay_ask_hint">Fungua programu unayotaka, kisha mwambie Dira unachotaka — andika au sauti.</string>
+    <string name="overlay_ready">Bonyeza kiputo cha D katika programu yoyote. Andika au sema, kisha Pata hatua — Dira inaonyesha kidhibiti na kusoma hatua kwa sauti.</string>
+    <string name="overlay_ready_sw">Bonyeza kiputo cha D katika programu yoyote. Andika au sema, kisha Pata hatua — Dira inaonyesha kidhibiti na kusoma hatua kwa sauti.</string>
+    <string name="overlay_thinking">Inatazama skrini hii…</string>
+    <string name="overlay_voice">Sauti</string>
+    <string name="overlay_listening">Inasikiliza…</string>
+    <string name="overlay_mic_needed">Ruhusu maikrofoni katika mipangilio ya Dira kutumia sauti.</string>
+    <string name="overlay_voice_unavailable">Utambuzi wa sauti haupatikani. Andika badala yake.</string>
+    <string name="overlay_voice_failed">Sikusikia. Jaribu tena au andika.</string>
+    <string name="overlay_hear_again">Sikiliza tena</string>
+    <string name="overlay_bubble_shown">Tafuta D ya teal kulia. Fungua Instagram (au programu yoyote) kisha ibonyeze.</string>
 </resources>

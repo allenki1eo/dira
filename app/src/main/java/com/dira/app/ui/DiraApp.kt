@@ -14,8 +14,7 @@ import com.dira.app.ui.screens.HomeScreen
 enum class DiraRoute { Consent, Home, Guide }
 
 /**
- * Consent → Home → (MediaProjection permission) → Guide
- * Overlay driven by guide targets; Stop / timeout clears session buffer.
+ * Consent → Home → overlay bubble (preferred) or in-app Guide fallback.
  */
 @Composable
 fun DiraApp(
@@ -26,15 +25,21 @@ fun DiraApp(
     onQuestionChange: (String) -> Unit,
     onGuideBaseChange: (String) -> Unit,
     onDismissCleared: () -> Unit,
+    overlayRestricted: Boolean = false,
+    onOpenAppInfo: () -> Unit = {},
+    onContinueWithoutBubble: () -> Unit = {},
+    overlayPermissionGranted: Boolean = false,
+    onShowBubble: () -> Unit = {},
 ) {
     var route by remember { mutableStateOf(DiraRoute.Consent) }
     var useSwahili by remember { mutableStateOf(false) }
 
-    LaunchedEffect(sessionState.watching) {
-        if (sessionState.watching) {
-            route = DiraRoute.Guide
-        } else if (route == DiraRoute.Guide) {
-            route = DiraRoute.Home
+    LaunchedEffect(sessionState.watching, sessionState.overlayMode) {
+        route = when {
+            sessionState.watching && !sessionState.overlayMode -> DiraRoute.Guide
+            sessionState.watching && sessionState.overlayMode -> DiraRoute.Home
+            route == DiraRoute.Guide -> DiraRoute.Home
+            else -> route
         }
     }
 
@@ -53,6 +58,11 @@ fun DiraApp(
             onHelp = { onHelp(useSwahili) },
             guideApiBase = sessionState.guideApiBase,
             onGuideBaseChange = onGuideBaseChange,
+            overlayActive = sessionState.watching && sessionState.overlayMode,
+            onStopOverlay = onStop,
+            overlayRestricted = overlayRestricted,
+            onOpenAppInfo = onOpenAppInfo,
+            onContinueWithoutBubble = onContinueWithoutBubble,
             guideModeLabel = if (sessionState.guideSource == "mock") {
                 if (useSwahili) "Hali ya onyesho (bila seva)" else "Mock guide (no backend)"
             } else {
@@ -65,6 +75,7 @@ fun DiraApp(
             onStop = onStop,
             onAskGuide = { onAskGuide(useSwahili) },
             onQuestionChange = onQuestionChange,
+            onShowBubble = if (overlayPermissionGranted) onShowBubble else null,
         )
     }
 }

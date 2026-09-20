@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Dira</string>
     <string name="consent_title">Before Dira can help</string>
-    <string name="consent_body">Dira is a temporary Android UI helper, not a recorder.\n\nWhen you tap Help, we ask for screen capture permission only to show the next step. Frames stay in memory — they are not kept. You can Stop anytime — then the session is cleared. Sessions also end after 5 minutes.</string>
+    <string name="consent_body">Dira is a temporary Android UI helper, not a recorder.\n\nWhen you tap Help we ask to draw over other apps, capture the screen briefly, and optionally use the mic.</string>
     <string name="consent_accept">I understand — continue</string>
     <string name="home_title">Dira</string>
     <string name="home_tagline">Your compass when any app gets stuck</string>
@@ -10,12 +10,25 @@
     <string name="watching">Watching…</string>
     <string name="stop">Stop watching</string>
     <string name="session_cleared">Session cleared.</string>
+    <string name="session_timed_out">Session timed out (5 minutes).</string>
     <string name="ask_hint">Ask what you want to do…</string>
     <string name="fake_step">Next: tap the highlighted control</string>
     <string name="lang_sw">Kiswahili</string>
     <string name="lang_en">English</string>
     <string name="demo_module">Generic Android UI coach (any app)</string>
     <string name="capture_channel_name">Screen guide</string>
-    <string name="capture_notification_body">Dira is watching this screen to guide you. Tap Stop in the app to end.</string>
+    <string name="capture_notification_body">Dira bubble is on. Tap Stop in the bubble or here to end.</string>
     <string name="guide_step">Guide step</string>
+    <string name="a11y_description">Dira reads on-screen controls in the app you are using so it can point at the next tap. It does not click for you, and it does not save the tree.</string>
+    <string name="overlay_ask_hint">Open the app you need, then tell Dira what you want — type or voice.</string>
+    <string name="overlay_ready">Tap the D bubble in any app. Type or speak, then Guide step — Dira highlights the control and reads the step aloud.</string>
+    <string name="overlay_ready_sw">Bonyeza kiputo cha D katika programu yoyote. Andika au sema, kisha Pata hatua — kielekezi kitaonekana kwenye skrini hiyo.</string>
+    <string name="overlay_thinking">Looking at this screen…</string>
+    <string name="overlay_voice">Voice</string>
+    <string name="overlay_listening">Listening…</string>
+    <string name="overlay_mic_needed">Allow microphone in Dira settings to use voice.</string>
+    <string name="overlay_voice_unavailable">Voice recognition isn\'t available on this device. Type instead.</string>
+    <string name="overlay_voice_failed">Couldn\'t hear that. Try again or type.</string>
+    <string name="overlay_hear_again">Hear again</string>
+    <string name="overlay_bubble_shown">Look for the teal D on the right. Open Instagram (or any app) and tap it.</string>
 </resources>

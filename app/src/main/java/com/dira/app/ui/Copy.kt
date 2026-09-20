@@ -21,15 +21,21 @@ data class DiraCopy(
     val projectionHint: String,
     val serverUrlHint: String,
     val tapMapLabel: String,
+    val overlayActive: String,
+    val overlayHelp: String,
+    val overlayRestrictedTitle: String,
+    val overlayRestrictedBody: String,
+    val openAppInfo: String,
+    val continueWithoutBubble: String,
+    val showBubble: String,
 )
 
 fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     consentTitle = "Kabla Dira iweze kukusaidia",
     consentBody = "Dira ni msaidizi wa muda wa UI wa Android, siyo kinasa skrini.\n\n" +
-        "Ukibonyeza Saidia, tunaomba ruhusa ya kuona skrini yako tu ili kuonyesha hatua inayofuata. " +
-        "Fremu zinakaa kwenye kumbukumbu — hazihifadhiwi. " +
-        "Unaweza kubonyeza Acha wakati wowote — kisha kikao kinafutwa. " +
-        "Kikao pia kitaisha baada ya dakika 5.",
+        "Ukibonyeza Saidia, tunaomba: (1) kuchora juu ya programu zingine — kiputo na kielekezi; " +
+        "(2) kushiriki skrini kwa fremu za muda; (3) maikrofoni kwa sauti, hiari. " +
+        "Fremu zinakaa kwenye kumbukumbu. Acha wakati wowote; kikao kinaisha baada ya dakika 5.",
     consentAccept = "Nimeelewa — endelea",
     homeTitle = "Dira",
     homeTagline = "Dira yako unapokwama kwenye programu yoyote",
@@ -44,16 +50,22 @@ fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     guideStep = "Pata hatua",
     guideSource = "Chanzo",
     sessionTimer = "Iliyobaki: %d:%02d",
-    projectionHint = "Utapata dirisha la mfumo la kushiriki skrini. Hakuna Accessibility, anwani, SMS, wala hifadhi.",
+    projectionHint = "Kwanza ruhusa ya kiputo juu ya programu, kisha kushiriki skrini. Fungua Gmail au programu yoyote — bonyeza kiputo kuandika au kusema.",
     serverUrlHint = "URL ya seva ya mwongozo (acha tupu = onyesho)",
     tapMapLabel = "Sehemu ya kubonyeza kwenye skrini yako",
+    overlayActive = "Kiputo kiko hai. Fungua programu unayotaka, kisha bonyeza kiputo cha D.",
+    overlayHelp = "Tutachora kiputo juu ya programu zingine. Bonyeza ili kuandika au kushiriki sauti — kisha kielekezi na sauti vitaonyesha mahali pa kubonyeza (Gmail, WhatsApp, Chrome, na programu nyinginezo).",
+    overlayRestrictedTitle = "Android imezuia kiputo",
+    overlayRestrictedBody = "Si hitilafu ya Dira. Programu zilizowekwa nje ya Play Store (sideload) haziwezi kuchora juu ya programu zingine hadi ufungue mipangilio iliyozuiliwa:\n\n1. Bonyeza Fungua taarifa ya Dira\n2. Bonyeza ⋮ (juu kulia) → Ruhusu mipangilio iliyozuiliwa\n3. Rudi, bonyeza Saidia tena, kisha washa Onyesha juu ya programu zingine.\n\nWakati huo unaweza kutumia ramani ya kubonyeza ndani ya Dira.",
+    openAppInfo = "Fungua taarifa ya Dira",
+    continueWithoutBubble = "Endelea bila kiputo",
+    showBubble = "Onyesha kiputo cha D kwenye programu",
 ) else DiraCopy(
     consentTitle = "Before Dira can help",
     consentBody = "Dira is a temporary Android UI helper, not a recorder.\n\n" +
-        "When you tap Help, we ask for screen capture permission only to show the next step. " +
-        "Frames stay in memory — they are not kept. " +
-        "You can Stop anytime — then the session is cleared. " +
-        "Sessions also end after 5 minutes.",
+        "When you tap Help we ask to: (1) draw over other apps — a bubble and a pointer; " +
+        "(2) capture the screen for short-lived frames; (3) use the mic for voice, optional. " +
+        "Frames stay in memory. Stop anytime; sessions also end after 5 minutes.",
     consentAccept = "I understand — continue",
     homeTitle = "Dira",
     homeTagline = "Your compass when any app gets stuck",
@@ -68,7 +80,14 @@ fun copy(useSwahili: Boolean): DiraCopy = if (useSwahili) DiraCopy(
     guideStep = "Guide step",
     guideSource = "Source",
     sessionTimer = "Left: %d:%02d",
-    projectionHint = "You’ll get the system screen-share prompt. No Accessibility, contacts, SMS, or storage.",
+    projectionHint = "You'll first allow a bubble over other apps, then screen share. Open Gmail (or any app) and tap the bubble to type or speak.",
     serverUrlHint = "Guide server URL (blank = mock)",
     tapMapLabel = "Tap target on your screen",
+    overlayActive = "The bubble is live. Open the app you need, then tap the D bubble.",
+    overlayHelp = "We'll draw a bubble over other apps. Tap it to type or send a voice note — then a highlight and spoken step show where to tap (Gmail, WhatsApp, Chrome, and other everyday apps).",
+    overlayRestrictedTitle = "Android blocked the bubble",
+    overlayRestrictedBody = "This is not a Dira bug. Sideloaded apps cannot draw over other apps until you unlock Restricted settings:\n\n1. Tap Open Dira app info\n2. Tap ⋮ (top right) → Allow restricted settings\n3. Come back, tap Help again, then turn on Display over other apps.\n\nUntil then you can still use the in-app tap map.",
+    openAppInfo = "Open Dira app info",
+    continueWithoutBubble = "Continue without the bubble",
+    showBubble = "Show the D bubble on the real app",
 )

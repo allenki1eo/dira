@@ -39,6 +39,7 @@ fun GuideScreen(
     onStop: () -> Unit,
     onAskGuide: () -> Unit,
     onQuestionChange: (String) -> Unit,
+    onShowBubble: (() -> Unit)? = null,
 ) {
     val c = copy(useSwahili)
     val minutes = (state.remainingMs / 60_000L).toInt()
@@ -84,6 +85,17 @@ fun GuideScreen(
             }
         }
 
+        if (onShowBubble != null) {
+            Button(
+                onClick = onShowBubble,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                Text(c.showBubble)
+            }
+        }
+
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -112,6 +124,11 @@ fun GuideScreen(
                     FakePointerOverlay(
                         xFraction = state.pointX,
                         yFraction = state.pointY,
+                        boxX = state.boxX,
+                        boxY = state.boxY,
+                        boxW = state.boxW,
+                        boxH = state.boxH,
+                        label = state.targetLabel,
                     )
                 }
             }
