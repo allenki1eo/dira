@@ -82,6 +82,7 @@ The model is prompted as a **generic Android UI coach**: one next tap, both EN/S
 
 Workflow: `.github/workflows/android-debug-apk.yml`
 
+- Runs on `ubuntu-24.04` using the image’s preinstalled Android SDK (compileSdk 35). Does **not** use `android-actions/setup-android@v3` (that action still installs the removed `tools` package).
 - Builds `dira-debug.apk` on PRs, `main`, tags `v*`, and `workflow_dispatch`
 - Uploads a **workflow artifact** named `dira-debug-apk`
 - On PRs: attaches the APK to a prerelease `apk-pr-<n>` and comments the download URL

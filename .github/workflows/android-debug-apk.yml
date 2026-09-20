@@ -25,7 +25,10 @@ jobs:
         run: npm test
 
   assemble-debug:
-    runs-on: ubuntu-latest
+    # ubuntu-24.04 already ships ANDROID_HOME with platforms;android-35 and
+    # build-tools 35.x. Do not use android-actions/setup-android@v3 — it still
+    # tries to install the removed `tools` package and fails.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -36,14 +39,28 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          # Avoid obsolete `tools` package (sdkmanager fails: Failed to find package 'tools')
-          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
-
-      - name: Write local.properties
-        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+      - name: Point Gradle at the runner Android SDK
+        run: |
+          set -euo pipefail
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          if [ ! -d "$SDK" ]; then
+            echo "Android SDK not found at $SDK"
+            exit 1
+          fi
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "sdk.dir=$SDK" > local.properties
+          echo "Using Android SDK at $SDK"
+          ls "$SDK/platforms" || true
+          if [ ! -d "$SDK/platforms/android-35" ]; then
+            SDKMANAGER="$(find "$SDK/cmdline-tools" -name sdkmanager -type f | head -n1)"
+            if [ -z "$SDKMANAGER" ]; then
+              echo "sdkmanager not found under $SDK/cmdline-tools"
+              exit 1
+            fi
+            yes | "$SDKMANAGER" --licenses >/dev/null || true
+            "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
+          fi
 
       - name: Assemble debug APK
         env:
